@@ -28,14 +28,13 @@ def create_app():
 app = create_app()
 celery_app = celery_init_app(app)
 
-
 @celery_app.on_after_configure.connect
 def send_email(sender, **kwargs):
     sender.add_periodic_task(
         crontab(hour=19, minute=55, day_of_month=20),
-        daily_reminder.s('narendra@email.com', 'Daily Test'),
+        daily_reminder.s('pallavidummy@gmail.com', 'Daily Reminder'),
     )
 
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5003)
+    app.run(debug=True,port=5000)
