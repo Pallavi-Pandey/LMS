@@ -6,14 +6,14 @@ db = SQLAlchemy()
 
 
 class RolesUsers(db.Model):
-    __tablename__ = 'roles_users'
+    __tablename__ = 'role_users'
     id = db.Column(db.Integer(), primary_key=True)
     user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
     role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     active = db.Column(db.Boolean(), default=True)
