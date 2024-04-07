@@ -55,3 +55,15 @@ def user_login():
         return jsonify({"token": user.get_auth_token(), "email": user.email, "role": get_user_roles(user.roles)})
     else:
         return jsonify({"message": "Wrong Password"}), 400
+    
+@app.get('/admin')
+@auth_required("token")
+@roles_required("admin")
+def admin():
+    return "Hello Admin"
+
+@app.get('/stud')
+@auth_required("token")
+@roles_required("stud")
+def stud():
+    return "hello student"
