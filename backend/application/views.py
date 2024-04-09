@@ -1,6 +1,8 @@
 from flask import current_app as app, jsonify, request, render_template, send_file
 from flask_security import auth_required, roles_required
 from werkzeug.security import check_password_hash
+from flask_security import auth_required, roles_required, current_user
+
 from flask_restful import marshal, fields
 import flask_excel as excel
 from celery.result import AsyncResult
@@ -66,4 +68,12 @@ def admin():
 @auth_required("token")
 @roles_required("stud")
 def stud():
-    return "hello student"
+    print(current_user.email)
+    return "Hello "+current_user.email
+
+#for librarian-dashboard
+@app.get('/librarian')
+@auth_required("token")
+@roles_required("admin")
+def librarian():
+    return "Hello Librarian"

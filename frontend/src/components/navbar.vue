@@ -11,15 +11,39 @@
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
 
-      <!-- Links to Dashboards -->
-      <router-link to="/librarian-dashboard" class="nav-link ms-auto">Librarian Dashboard</router-link>
-      <router-link to="/user-dashboard" class="nav-link">User Dashboard</router-link>
+      <!-- Navbar Links -->
+
+        <div v-if="role === 'admin'">
+          <router-link to="/books" class="nav-link">Books</router-link>
+          <router-link to="/status" class="nav-link">Status</router-link>
+        </div>
+        <div v-else-if="role === 'stud'">
+          <router-link to="/allbooks" class="nav-link">All Books</router-link>
+          <router-link to="/mydashboard" class="nav-link">My Dashboard</router-link>
+        </div>
+
+      <!-- Logout Button -->
+      <button v-if="is_login" @click="logout" class="btn btn-outline-danger ms-auto">Logout</button>
     </div>
   </nav>
 </template>
 
 <script>
 export default {
+  data() {
+
+    return {
+      role: localStorage.getItem('role'),
+      is_login: localStorage.getItem('auth-token'),
+    };
+  },
+  methods: {
+    logout() {
+      localStorage.removeItem('auth-token');
+      localStorage.removeItem('role');
+      // reload
+      this.$router.push({ path: '/login' });
+    },
+  },
 };
 </script>
-

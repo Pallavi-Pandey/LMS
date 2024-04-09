@@ -52,6 +52,7 @@ export default {
       if (res.ok) {
         localStorage.setItem('auth-token', data.token);
         localStorage.setItem('role', data.role);
+        // refresh
         if (data.role === 'admin') {
           this.$router.push({ path: '/librarian-dashboard' });
         } else {

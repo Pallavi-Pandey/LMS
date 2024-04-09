@@ -14,8 +14,10 @@ import axios from 'axios';
 
 export default {
   data() {
+
     return {
-      books: []
+      role: localStorage.getItem('role'),
+      is_login: localStorage.getItem('auth-token'),
     };
   },
   mounted() {
