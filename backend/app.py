@@ -27,6 +27,7 @@ def create_app():
 
 
 app = create_app()
+CORS(app)
 celery_app = celery_init_app(app)
 
 @celery_app.on_after_configure.connect

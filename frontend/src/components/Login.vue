@@ -11,7 +11,7 @@
           <label for="password">Password:</label>
           <input type="password" id="password" v-model.trim="password" placeholder="Enter your password" required>
         </div>
-        <button type="submit" class="btn-primary">Login</button>
+        <button class="btn btn-primary mt-2" @click='login'> Login </button>
         <p v-if="errStatus" class="error-msg">{{ errormsg }}</p>
       </form>
       <p>Don't have an account? <router-link to="/signup">Sign Up</router-link></p>
@@ -31,14 +31,14 @@ export default {
     };
   },
   methods: {
-    login() {
+    async login() {
       if (!this.email || !this.password) {
         this.errormsg = "Please enter both email and password.";
         this.errStatus = true;
         return;
       }
 
-      fetch("http://127.0.0.1:5000/api/login", {
+      const res = await fetch("http://127.0.0.1:5000/user-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,34 +48,25 @@ export default {
           password: this.password,
         }),
       })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Unable to log in. Please try again later.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log(data.msg);
-          if (data.status) {
-            localStorage.setItem("access_token", data.access_token);
-            localStorage.setItem("user_id", this.email);
-            localStorage.setItem("username", data.username);
-            this.$router.push("/dashboard");
-          } else {
-            this.errStatus = true;
-            this.errormsg = data.msg;
-            this.email = ""; // Reset email field
-            this.password = ""; // Reset password field
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          this.errStatus = true;
-          this.errormsg = "Unable to log in. Please try again later.";
-        });
-    },
-  },
-};
+      const data = await res.json()
+      if (res.ok) {
+        localStorage.setItem('auth-token', data.token)
+        localStorage.setItem('role', data.role)
+        if (data.role === 'admin') {
+          this.$router.push({ path: '/librarian-dashboard' })
+        } else {
+          this.$router.push({ path: '/user-dashboard' })
+        }
+      }
+       else {
+        this.error = data.message
+      }
+    }
+  }
+}
+
+
+
 </script>
 
 <style scoped>
