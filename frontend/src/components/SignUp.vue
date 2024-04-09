@@ -19,7 +19,7 @@
           <label for="confirmPassword">Confirm Password:</label>
           <input type="password" id="confirmPassword" v-model.trim="confirmPassword" required>
         </div>
-        <button class="btn btn-primary mt-2" @click='signup' > Signup </button>
+        <button class="btn btn-primary mt-2"> Signup </button>
       </form>
       <p>Already have an account? <router-link to="/login">Login</router-link></p>
     </div>
@@ -59,8 +59,7 @@ export default {
       })
       const data = await res.json()
       if (res.ok) {
-        localStorage.setItem('auth-token', data.token)
-        localStorage.setItem('role', data.role)
+        alert('registration successful')
         
           this.$router.push({ path: '/login' })
         

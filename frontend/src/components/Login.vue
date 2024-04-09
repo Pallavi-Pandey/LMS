@@ -11,7 +11,7 @@
           <label for="password">Password:</label>
           <input type="password" id="password" v-model.trim="password" placeholder="Enter your password" required>
         </div>
-        <button class="btn btn-primary mt-2" @click='login'> Login </button>
+        <button class="btn btn-primary mt-2"> Login </button>
         <p v-if="errStatus" class="error-msg">{{ errormsg }}</p>
       </form>
       <p>Don't have an account? <router-link to="/signup">Sign Up</router-link></p>
@@ -47,28 +47,24 @@ export default {
           email: this.email,
           password: this.password,
         }),
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('auth-token', data.token)
-        localStorage.setItem('role', data.role)
+        localStorage.setItem('auth-token', data.token);
+        localStorage.setItem('role', data.role);
         if (data.role === 'admin') {
-          this.$router.push({ path: '/librarian-dashboard' })
+          this.$router.push({ path: '/librarian-dashboard' });
         } else {
-          this.$router.push({ path: '/user-dashboard' })
+          this.$router.push({ path: '/user-dashboard' });
         }
-      }
-       else {
-        this.error = data.message
+      } else {
+        this.errormsg = data.message;
+        this.errStatus = true;
       }
     }
   }
 }
-
-
-
 </script>
-
 <style scoped>
 .login-container {
   display: flex;
