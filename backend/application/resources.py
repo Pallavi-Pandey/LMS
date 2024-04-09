@@ -32,6 +32,11 @@ study_material_fields = {
     'creator': Creator
 }
 
+section_marshal={
+    'id': fields.Integer,
+    'name': fields.String
+
+}
 
 class StudyMaterial(Resource):
     @auth_required("token")

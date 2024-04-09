@@ -9,6 +9,7 @@ from celery.result import AsyncResult
 from .tasks import create_resource_csv
 from .models import Book, Section, User, db
 from werkzeug.security import generate_password_hash
+from .resources import section_marshal
 
 from .sec import datastore
 
@@ -145,7 +146,7 @@ def add_section():
 @app.route('/sections', methods=['GET'])
 def get_sections():
     sections = Section.query.all()
-    return jsonify([section.serialize() for section in sections])
+    return marshal(sections, section_marshal)
 
 #to get section by id
 @app.route('/section/<int:id>', methods=['GET'])

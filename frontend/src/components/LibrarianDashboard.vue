@@ -15,6 +15,11 @@
           </div>
           <div class="card-body">
             <p>Show all sections here</p>
+            <ul>
+              <li v-for="section in sections" :key="section.id">
+                {{ section.name }} <button>Update</button> <button>delete</button>
+              </li>
+            </ul>
           </div>
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSectionModal">
             Add Section
@@ -50,10 +55,13 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
+
 export default {
   data() {
     return {
-      sectionName: ''
+      sectionName: '',
+      sections: []
     };
   },
   methods: {
@@ -85,8 +93,37 @@ export default {
         console.error('Error adding section:', error);
       });
     }
-  }
+  },
+  // to create a function to get all sections
+   
+
+
+  async mounted() {
+    const res = await 
+     fetch('http://127.0.0.1:5000/sections',{
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Authentication-Token': localStorage.getItem('auth-token')
+      }
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error('Unable to fetch section');
+      }
+      return response.json();
+    }).then(data => {
+      // store the data to sections
+      console.log(data);
+      this.sections = data;
+      console.log('Section fetched successfully', data);
+    }).catch(error => {
+      console.error('Error fetching section:', error);
+    });
+}
 };
+
+
 </script>
 
 <style scoped>
