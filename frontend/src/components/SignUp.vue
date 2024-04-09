@@ -19,7 +19,7 @@
           <label for="confirmPassword">Confirm Password:</label>
           <input type="password" id="confirmPassword" v-model.trim="confirmPassword" required>
         </div>
-        <button type="submit" class="btn-primary">Sign Up</button>
+        <button class="btn btn-primary mt-2" @click='signup' > Signup </button>
       </form>
       <p>Already have an account? <router-link to="/login">Login</router-link></p>
     </div>
@@ -37,19 +37,19 @@ export default {
     };
   },
   methods: {
-    signup() {
+  async  signup() {
       if (this.password !== this.confirmPassword) {
         alert("Passwords do not match");
         return;
       }
 
       const userData = {
-        username: this.username,
+        name: this.username,
         email: this.email,
         password: this.password
       };
 
-      fetch("http://127.0.0.1:5000/api/register", {
+   const res =  await fetch("http://127.0.0.1:5000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,20 +57,17 @@ export default {
         },
         body: JSON.stringify(userData),
       })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Unable to register. Please try again later.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log(data.msg);
-          this.$router.push('/login');
-        })
-        .catch((err) => {
-          console.error(err);
-          alert("Unable to register. Please try again later.");
-        });
+      const data = await res.json()
+      if (res.ok) {
+        localStorage.setItem('auth-token', data.token)
+        localStorage.setItem('role', data.role)
+        
+          this.$router.push({ path: '/login' })
+        
+      }
+      else {
+        alert(data.message)
+      }
     }
   }
 };
