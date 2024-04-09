@@ -7,7 +7,7 @@ from flask_restful import marshal, fields
 import flask_excel as excel
 from celery.result import AsyncResult
 from .tasks import create_resource_csv
-from .models import User, db
+from .models import Book, Section, User, db
 from werkzeug.security import generate_password_hash
 
 from .sec import datastore
@@ -71,9 +71,113 @@ def stud():
     print(current_user.email)
     return "Hello "+current_user.email
 
-#for librarian-dashboard
-@app.get('/librarian')
+#for librarian-dashboard to add book
+@app.route('/add-book', methods=['POST'])
 @auth_required("token")
 @roles_required("admin")
-def librarian():
-    return "Hello Librarian"
+def add_book():
+    book_data = request.json
+    if 'name' not in book_data or 'content' not in book_data or 'author_id' not in book_data:
+        return jsonify({'error': 'Missing required fields'}), 400
+    new_book = Book(name=book_data['name'], content=book_data['content'], author_id=book_data['author_id'])
+    db.session.add(new_book)
+    db.session.commit()
+    return jsonify({'message': 'Book added successfully'}), 201
+
+#to get all books
+@app.route('/books', methods=['GET'])
+def get_books():
+    books = Book.query.all()
+    return jsonify([book.serialize() for book in books])
+
+#to get book by id
+@app.route('/book/<int:id>', methods=['GET'])
+def get_book(id):
+    book = Book.query.get(id)
+    if book:
+        return jsonify(book.serialize())
+    return jsonify({'error': 'Book not found'}), 404
+
+#to update book by id
+@app.route('/book/<int:id>', methods=['PUT'])
+@auth_required("token")
+@roles_required("admin")
+def update_book(id):
+    book = Book.query.get(id)
+    if not book:
+        return jsonify({'error': 'Book not found'}), 404
+    book_data = request.json
+    if 'name' in book_data:
+        book.name = book_data['name']
+    if 'content' in book_data:
+        book.content = book_data['content']
+    if 'author_id' in book_data:
+        book.author_id = book_data['author_id']
+    db.session.commit()
+    return jsonify({'message': 'Book updated successfully'})
+
+#to delete book by id
+@app.route('/book/<int:id>', methods=['DELETE'])
+@auth_required("token")
+@roles_required("admin")
+def delete_book(id):
+    book = Book.query.get(id)
+    if book:
+        db.session.delete(book)
+        db.session.commit()
+        return jsonify({'message': 'Book deleted successfully'})
+    return jsonify({'error': 'Book not found'}), 404
+
+#to add section
+@app.route('/add-section', methods=['POST'])
+@auth_required("token")
+@roles_required("admin")
+def add_section():
+    section_data = request.json
+    if 'name' not in section_data:
+        return jsonify({'error': 'Missing required fields'}), 400
+    new_section = Section(name=section_data['name'])
+    db.session.add(new_section)
+    db.session.commit()
+    return jsonify({'message': 'Section added successfully'}), 201
+
+#to get all sections
+@app.route('/sections', methods=['GET'])
+def get_sections():
+    sections = Section.query.all()
+    return jsonify([section.serialize() for section in sections])
+
+#to get section by id
+@app.route('/section/<int:id>', methods=['GET'])
+def get_section(id):
+    section = Section.query.get(id)
+    if section:
+        return jsonify(section.serialize())
+    return jsonify({'error': 'Section not found'}), 404
+
+#to update section by id
+@app.route('/section/<int:id>', methods=['PUT'])
+@auth_required("token")
+@roles_required("admin")
+def update_section(id):
+    section = Section.query.get(id)
+    if not section:
+        return jsonify({'error': 'Section not found'}), 404
+    section_data = request.json
+    if 'name' in section_data:
+        section.name = section_data['name']
+    db.session.commit()
+    return jsonify({'message': 'Section updated successfully'})
+
+#to delete section by id
+@app.route('/section/<int:id>', methods=['DELETE'])
+@auth_required("token")
+@roles_required("admin")
+def delete_section(id):
+    section = Section.query.get(id)
+    if section:
+        db.session.delete(section)
+        db.session.commit()
+        return jsonify({'message': 'Section deleted successfully'})
+    return jsonify({'error': 'Section not found'}), 404
+

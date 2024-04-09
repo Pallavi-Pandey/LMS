@@ -49,11 +49,14 @@ export default {
         }),
       });
       const data = await res.json();
+      console.log("aaaaaaaaa",data)
       if (res.ok) {
         localStorage.setItem('auth-token', data.token);
         localStorage.setItem('role', data.role);
         // refresh
-        if (data.role === 'admin') {
+        console.log(data);
+        if (data.role[0] === 'admin') {
+          console.log('admin');
           this.$router.push({ path: '/librarian-dashboard' });
         } else {
           this.$router.push({ path: '/user-dashboard' });

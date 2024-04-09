@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <!-- Logo -->
       <img src="https://img.icons8.com/ios/452/book.png" alt="logo" width="30" height="30" class="d-inline-block align-top">
-      <a class="navbar-brand">Pallavi Library</a>
+      <a class="navbar-brand">Pallavi Library Management</a>
 
       <!-- Search Form -->
       <form class="d-flex" role="search">
@@ -14,8 +14,8 @@
       <!-- Navbar Links -->
 
         <div v-if="role === 'admin'">
-          <router-link to="/books" class="nav-link">Books</router-link>
-          <router-link to="/status" class="nav-link">Status</router-link>
+          <router-link to="/books" class="nav-link">Requests</router-link>
+          <router-link to="/status" class="nav-link">Stats</router-link>
         </div>
         <div v-else-if="role === 'stud'">
           <router-link to="/allbooks" class="nav-link">All Books</router-link>

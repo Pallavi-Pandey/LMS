@@ -41,15 +41,13 @@ class Role(db.Model, RoleMixin):
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    image = db.Column(db.String(100))
-    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text)
+    image = db.Column(db.String(100))
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
     # section = db.relationship('Section', backref=db.backref('books', lazy=True))
 
@@ -57,7 +55,6 @@ class Author(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     bio = db.Column(db.Text)
-    image = db.Column(db.String(100))
 
 class AuthorBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
