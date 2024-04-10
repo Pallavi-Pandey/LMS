@@ -72,15 +72,17 @@ def stud():
     print(current_user.email)
     return "Hello "+current_user.email
 
-#for librarian-dashboard to add book
+#-----------------------------------------------------------------------For Librarian------------------------------------------------------------------------------------------
+#to add book
 @app.route('/add-book', methods=['POST'])
 @auth_required("token")
 @roles_required("admin")
 def add_book():
     book_data = request.json
-    if 'name' not in book_data or 'content' not in book_data or 'author_id' not in book_data:
+    print(book_data,"aaaa")
+    if 'name' not in book_data or 'content' not in book_data or 'author' not in book_data or 'section_id' not in book_data or 'image' not in book_data:
         return jsonify({'error': 'Missing required fields'}), 400
-    new_book = Book(name=book_data['name'], content=book_data['content'], author_id=book_data['author_id'])
+    new_book = Book(name=book_data['name'], content=book_data['content'], author=book_data['author'],section_id=book_data['section_id'], image=book_data['image'])
     db.session.add(new_book)
     db.session.commit()
     return jsonify({'message': 'Book added successfully'}), 201
@@ -146,6 +148,9 @@ def add_section():
 @app.route('/sections', methods=['GET'])
 def get_sections():
     sections = Section.query.all()
+    # to get all books in each section
+    for section in sections:
+        section.books = [book.serialize() for book in section.books]
     return marshal(sections, section_marshal)
 
 #to get section by id
@@ -153,7 +158,7 @@ def get_sections():
 def get_section(id):
     section = Section.query.get(id)
     if section:
-        return jsonify(section.serialize())
+         return marshal(section, section_marshal)
     return jsonify({'error': 'Section not found'}), 404
 
 #to update section by id
@@ -171,7 +176,7 @@ def update_section(id):
     return jsonify({'message': 'Section updated successfully'})
 
 #to delete section by id
-@app.route('/section/<int:id>', methods=['DELETE'])
+@app.route('/delete-section/<int:id>', methods=['DELETE'])
 @auth_required("token")
 @roles_required("admin")
 def delete_section(id):
@@ -181,4 +186,5 @@ def delete_section(id):
         db.session.commit()
         return jsonify({'message': 'Section deleted successfully'})
     return jsonify({'error': 'Section not found'}), 404
+
 

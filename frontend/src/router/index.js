@@ -4,6 +4,8 @@ import SignUp from '@/components/SignUp.vue';
 import LibrarianDashboard from '@/components/LibrarianDashboard.vue';
 import UserDashboard from '@/components/UserDashboard.vue';
 import HelloWorld from '@/components/HelloWorld.vue';
+import Section from '@/components/Section.vue';
+import SingleSection from '@/components/SingleSection.vue';
 
 const routes = [ 
     {path: '/login' , component: Login},
@@ -11,6 +13,8 @@ const routes = [
     {path: '/librarian-dashboard' , component: LibrarianDashboard},
     {path: '/user-dashboard' , component: UserDashboard},
     {path: '/hello-world' , component: HelloWorld},
+    {path: '/section' , component: Section},
+    {path:"/section/:id", component: SingleSection},
 ];
 
 

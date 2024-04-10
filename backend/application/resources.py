@@ -32,10 +32,19 @@ study_material_fields = {
     'creator': Creator
 }
 
+book_marshal={
+    'id': fields.Integer,
+    'name': fields.String,
+    'author': fields.String,
+    'section_id': fields.Integer,
+    'content': fields.String,
+    'image': fields.String
+}
+
 section_marshal={
     'id': fields.Integer,
-    'name': fields.String
-
+    'name': fields.String,
+    "books": fields.List(fields.Nested(book_marshal))
 }
 
 class StudyMaterial(Resource):

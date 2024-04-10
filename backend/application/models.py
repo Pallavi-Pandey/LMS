@@ -41,6 +41,7 @@ class Role(db.Model, RoleMixin):
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    books= db.relationship('Book', backref=db.backref('section', lazy=True))
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,18 +49,9 @@ class Book(db.Model):
     name = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text)
     image = db.Column(db.String(100))
-    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
+    author= db.Column(db.String(100), nullable=False)
     # section = db.relationship('Section', backref=db.backref('books', lazy=True))
 
-class Author(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    bio = db.Column(db.Text)
-
-class AuthorBook(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
 
 class BookRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
