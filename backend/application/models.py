@@ -43,6 +43,13 @@ class Section(db.Model):
     name = db.Column(db.String(100), nullable=False)
     books= db.relationship('Book', backref=db.backref('section', lazy=True))
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            "books": [book.serialize() for book in self.books]
+        }
+
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
@@ -52,6 +59,15 @@ class Book(db.Model):
     author= db.Column(db.String(100), nullable=False)
     # section = db.relationship('Section', backref=db.backref('books', lazy=True))
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'author': self.author,
+            'section_id': self.section_id,
+            'content': self.content,
+            'image': self.image
+        }
 
 class BookRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
