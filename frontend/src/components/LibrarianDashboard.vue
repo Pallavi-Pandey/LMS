@@ -11,17 +11,16 @@
       <div class="col-md-12">
         <div class="card mt-4">
           <div class="card-header">
-            Section Management
+            <h3>Section Management</h3>
           </div>
           <div class="card-body">
-            <p>Show all sections here</p>
             <ul>
-              <li v-for="section in sections" :key="section.id">
+              <div v-for="section in sections" :key="section.id">
                 <router-link :to="`/section/${section.id}`" class="btn-primary">{{ section.name }}</router-link>
                 <span class="badge bg-secondary">{{ section.books.length }}</span>Books
                 <button type="button" class="btn btn-primary">Update</button>
                 <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
-              </li>
+              </div>
             </ul>
           </div>
           <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSectionModal">
@@ -109,7 +108,7 @@ export default {
         console.log('Section added successfully', data);
         $('#addSectionModal').modal('hide');
         this.sectionName = '';
-        this.getSections(); // Refresh the section list
+        this.getSections();
       } catch (error) {
         console.error('Error adding section:', error);
       }
@@ -171,4 +170,5 @@ export default {
 .card {
   margin-bottom: 20px;
 }
+
 </style>

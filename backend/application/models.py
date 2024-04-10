@@ -67,6 +67,13 @@ class Book(db.Model):
             'content': self.content,
             'image': self.image
         }
+    
+    def status(self,user_id):
+        book_request = BookRequest.query.filter_by(book_id=self.id,user_id=user_id).first()
+        if book_request:
+            return book_request.status
+        return "available"
+        
 
 class BookRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)

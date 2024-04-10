@@ -7,7 +7,7 @@ from flask_restful import marshal, fields
 import flask_excel as excel
 from celery.result import AsyncResult
 from .tasks import create_resource_csv
-from .models import Book, Section, User, db
+from .models import Book, Section, User, db,BookRequest,BookAccessHistory,BookRating
 from werkzeug.security import generate_password_hash
 from .resources import section_marshal,book_marshal
 
@@ -146,13 +146,19 @@ def add_section():
 
 #to get all sections
 @app.route('/sections', methods=['GET'])
+@auth_required("token")
 def get_sections():
+    
     sections = Section.query.all()
     serialized_sections = []
     for section in sections:
         section_data = marshal(section, section_marshal)
         section_data['books'] = [marshal(book, book_marshal) for book in section.books]
+        for book in section.books:
+            book.status = book.status(current_user.id)
+            print(book.status,"status")
         serialized_sections.append(section_data)
+    print(serialized_sections)
     return serialized_sections
 
 
@@ -191,3 +197,20 @@ def delete_section(id):
     return jsonify({'error': 'Section not found'}), 404
 
 
+# rent a book
+@app.route('/rent-book', methods=['POST'])
+@auth_required("token")
+@roles_required("stud")
+def rent_book():
+    data = request.json
+    book_id = data.get('book_id')
+    user_id = current_user.id
+    book = Book.query.get(book_id)
+    if not book:
+        return jsonify({'error': 'Book not found'}), 404
+
+    book_request = BookRequest(book_id=book_id, user_id=user_id,status='requested')
+    db.session.add(book_request)
+    db.session.commit()
+    
+    return jsonify({'message': 'Book renting requested successfully'}), 201

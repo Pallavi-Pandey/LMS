@@ -38,7 +38,8 @@ book_marshal={
     'author': fields.String,
     'section_id': fields.Integer,
     'content': fields.String,
-    'image': fields.String
+    'image': fields.String,
+    "status": fields.String
 }
 
 section_marshal={
