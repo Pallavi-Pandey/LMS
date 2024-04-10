@@ -14,7 +14,7 @@
       <!-- Navbar Links -->
       <div class="navbar-links">
         <div v-if="role === 'admin'" class="admin-links">
-          <!-- <router-link to="/li" class="nav-link">Add Books</router-link> -->
+          <router-link to="/librarian-dashboard" class="nav-link">Dashboard</router-link>
           <router-link to="/books" class="nav-link">Requests</router-link>
           <router-link to="/status" class="nav-link">Stats</router-link>
         </div>

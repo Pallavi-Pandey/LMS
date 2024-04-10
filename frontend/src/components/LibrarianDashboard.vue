@@ -17,9 +17,10 @@
             <p>Show all sections here</p>
             <ul>
               <li v-for="section in sections" :key="section.id">
-                <router-link :to="`/section/${section.id}`"   class="btn-primary">{{ section.name }}</router-link>
- <button>Update</button> 
-                <button @click="confirmDelete(section.id)">Delete</button>
+                <router-link :to="`/section/${section.id}`" class="btn-primary">{{ section.name }}</router-link>
+                <span class="badge bg-secondary">{{ section.books.length }}</span>Books
+                <button type="button" class="btn btn-primary">Update</button>
+                <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
               </li>
             </ul>
           </div>
@@ -31,7 +32,8 @@
     </div>
 
     <!-- Add Section Modal -->
-    <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel"
+      aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -42,7 +44,7 @@
             <form @submit.prevent="addSection">
               <div class="mb-3">
                 <label for="sectionName" class="form-label">Section Name</label>
-                <input type="text" class="form-control" id="sectionName"  v-model.trim="sectionName" required>
+                <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
               </div>
               <button type="submit" class="btn btn-primary">Add Section</button>
             </form>
@@ -55,7 +57,8 @@
     </div>
 
     <!-- Delete Section Confirmation Modal -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+      aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">

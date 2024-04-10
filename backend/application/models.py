@@ -40,7 +40,7 @@ class Role(db.Model, RoleMixin):
 
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
     books= db.relationship('Book', backref=db.backref('section', lazy=True))
 
     def serialize(self):
@@ -57,7 +57,6 @@ class Book(db.Model):
     content = db.Column(db.Text)
     image = db.Column(db.String(100))
     author= db.Column(db.String(100), nullable=False)
-    # section = db.relationship('Section', backref=db.backref('books', lazy=True))
 
     def serialize(self):
         return {

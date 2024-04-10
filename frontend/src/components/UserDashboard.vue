@@ -1,39 +1,51 @@
 <template>
   <div>
-    <h1>List of Books</h1>
-    <ul>
-      <li v-for="book in books" :key="book.id">
-        {{ book.name }} - {{ book.author }}
-      </li>
-    </ul>
+    <h1>Welcome to the Library</h1>
+    <div v-for="section in sections" :key="section.id">
+      <h2>{{ section.name }}</h2>
+      <div class="card-group">
+        <div v-for="book in section.books" :key="book.id" class="card">
+          <img :src="book.image" class="card-img-top" alt="Book Cover">
+          <div class="card-body">
+            <h5 class="card-title">{{ book.name }}</h5>
+            <p class="card-text">{{ book.content }}</p>
+            <p class="card-text">{{ book.author }}</p>
+            <button type="button" class="btn btn-primary">Rent</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
-
     return {
-      role: localStorage.getItem('role'),
-      is_login: localStorage.getItem('auth-token'),
+      sections: [],
     };
   },
-  mounted() {
-    // Fetch all books from the backend API
-    this.fetchBooks();
+  created() {
+    this.fetchSections();
   },
   methods: {
-    fetchBooks() {
-      axios.get('http://localhost:5000/api/books')
-        .then(response => {
-          this.books = response.data;
-        })
-        .catch(error => {
-          console.error('Error fetching books:', error);
-        });
-    }
-  }
+    async fetchSections() {
+            try {
+                // Fetch section and books data from the backend API
+                const response = await fetch(`http://127.0.0.1:5000/sections`);
+                if (!response.ok) {
+                    throw new Error("Unable to fetch section");
+                }
+                const data = await response.json();
+                console.log(data);
+                this.sections = data;
+                this.books = data.books;
+
+
+            } catch (error) {
+                console.error("Error fetching section:", error);
+            }
+        },
+  },
 };
 </script>
