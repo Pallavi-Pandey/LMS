@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
@@ -73,6 +74,12 @@ class Book(db.Model):
         if book_request:
             return book_request.status
         return "available"
+    
+    def requested_date(self,user_id):
+        book_request = BookRequest.query.filter_by(book_id=self.id,user_id=user_id).first()
+        if book_request:
+            return book_request.requested_date
+        return None
         
 
 class BookRequest(db.Model):
@@ -82,6 +89,37 @@ class BookRequest(db.Model):
     requested_date = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
     status = db.Column(db.String(100), nullable=False)# pending, approved, rejected //revoke
     return_date = db.Column(db.TIMESTAMP)
+
+    @property
+    def book_title(self):
+        return Book.query.get(self.book_id).name
+    
+    @property
+    def user_name(self):
+        return User.query.get(self.user_id).name
+    
+    @property
+    def author_name(self):
+        return Book.query.get(self.book_id).author
+    
+    @property
+    def section_name(self):
+        return Section.query.get(Book.query.get(self.book_id).section_id).name
+    
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'book_id': self.book_id,
+            'requested_date': self.requested_date,
+            'status': self.status,
+            'return_date': self.return_date,
+            'book_title': self.book_title,
+            'user_name': self.user_name,
+            'author_name': self.author_name,
+            'section_name': self.section_name
+        }
+
 
 class BookAccessHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)

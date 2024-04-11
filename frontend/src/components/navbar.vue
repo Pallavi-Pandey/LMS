@@ -15,12 +15,12 @@
       <div class="navbar-links">
         <div v-if="role === 'admin'" class="admin-links">
           <router-link to="/librarian-dashboard" class="nav-link">Dashboard</router-link>
-          <router-link to="/books" class="nav-link">Requests</router-link>
+          <router-link to="/requests" class="nav-link">Requests</router-link>
           <router-link to="/status" class="nav-link">Stats</router-link>
         </div>
         <div v-else-if="role === 'stud'" class="student-links">
-          <router-link to="/allbooks" class="nav-link">All Books</router-link>
-          <router-link to="/mydashboard" class="nav-link">My Dashboard</router-link>
+          <router-link to="/my-books" class="nav-link">My Books</router-link>
+          <router-link to="/user-dashboard" class="nav-link">My Dashboard</router-link>
         </div>
       </div>
 

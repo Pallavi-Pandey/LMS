@@ -16,9 +16,9 @@
           <div class="card-body">
             <ul>
               <div v-for="section in sections" :key="section.id">
-                <router-link :to="`/section/${section.id}`" class="btn-primary">{{ section.name }}</router-link>
+                <router-link :to="`/section/${section.id}`" class="section">{{ section.name }}</router-link>
                 <span class="badge bg-secondary">{{ section.books.length }}</span>Books
-                <button type="button" class="btn btn-primary">Update</button>
+                <button type="button" class="btn btn-info">Update</button>
                 <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
               </div>
             </ul>
@@ -170,5 +170,9 @@ export default {
 .card {
   margin-bottom: 20px;
 }
-
+/* change the color of buttons */
+.btn-primary {
+  background-color: rgb(29, 168, 168);
+  border-color: #08131f;
+}
 </style>

@@ -53,6 +53,7 @@ export default {
       if (res.ok) {
         localStorage.setItem('auth-token', data.token);
         localStorage.setItem('role', data.role);
+        localStorage.setItem('email', data.email);
         // refresh
         console.log(data);
         if (data.role[0] === 'admin') {
