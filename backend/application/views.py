@@ -148,7 +148,7 @@ def add_section():
 @app.route('/sections', methods=['GET'])
 @auth_required("token")
 def get_sections():
-    sections = Section.query.all()
+    sections = Section.query.filter_by(is_deleted=False).all()
     serialized_sections = []
     for section in sections:
         section_data = marshal(section, section_marshal)
@@ -197,7 +197,7 @@ def update_section(id):
 def delete_section(id):
     section = Section.query.get(id)
     if section:
-        db.session.delete(section)
+        section.is_deleted = True
         db.session.commit()
         return jsonify({'message': 'Section deleted successfully'})
     return jsonify({'error': 'Section not found'}), 404

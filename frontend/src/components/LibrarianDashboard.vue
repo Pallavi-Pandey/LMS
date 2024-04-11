@@ -77,7 +77,7 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-add-section">Close</button>
           </div>
         </div>
       </div>
@@ -172,7 +172,10 @@ export default {
         }
         const data = await response.json();
         console.log('Section added successfully', data);
-        $('#addSectionModal').modal('hide');
+        const btnn=document.getElementById('close-add-section');
+        console.log(btnn);
+        btnn.click();
+
         this.sectionName = '';
         this.getSections();
       } catch (error) {
@@ -181,7 +184,11 @@ export default {
     },
     confirmDelete(sectionId) {
       this.sectionToDelete = sectionId;
-      $('#confirmDeleteModal').modal('show');
+      if(confirm('Are you sure you want to delete this section?')){
+        this.deleteSection();
+
+      }
+
     },
     async deleteSection() {
       try {
@@ -197,7 +204,6 @@ export default {
           throw new Error('Unable to delete section');
         }
         console.log('Section deleted successfully');
-        $('#confirmDeleteModal').modal('hide');
         this.getSections(); // Refresh the section list
       } catch (error) {
         console.error('Error deleting section:', error);

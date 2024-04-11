@@ -43,6 +43,7 @@ class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     books= db.relationship('Book', backref=db.backref('section', lazy=True))
+    is_deleted = db.Column(db.Boolean, default=False)
 
     def serialize(self):
         return {
@@ -58,6 +59,7 @@ class Book(db.Model):
     content = db.Column(db.Text)
     image = db.Column(db.String(100))
     author= db.Column(db.String(100), nullable=False)
+    is_deleted = db.Column(db.Boolean, default=False)
 
     def serialize(self):
         return {
