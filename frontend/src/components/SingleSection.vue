@@ -17,9 +17,11 @@
                         <p class="card-text">{{ book.content }}</p>
                         <p class="card-text">{{ book.author }}</p>
                         <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-primary">Update</button>
-                            <button type="button" class="btn btn-danger">Delete</button>
-                            
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"   @click="updatemodal(book.id)" >
+ Update
+</button>
+                <button type="button" class="btn btn-danger" @click="confirmDelete(book.id)">Delete</button>
+            
                         </div>
                     </div>
                 </div>
@@ -27,7 +29,44 @@
             </div>
         </ul>
     </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="bookName" class="form-label">Book Name</label>
+            <input type="text" class="form-control" id="bookName" v-model.trim="bookName" required>
+          </div>
+          <div class="mb-3">
+            <label for="author" class="form-label">Author</label>
+            <input type="text" class="form-control" id="author" v-model.trim="author" required>
+          </div>
+          <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <textarea class="form-control" id="content" v-model.trim="content" required></textarea>
+          </div>
+          <!-- image link -->
+          <div class="mb-3">
+            <label for="image" class="form-label">Image</label>
+            <input type="text" class="form-control" id="image" v-model.trim="image" required>
+          </div>
+          <button type="submit" class="btn btn-primary" @click="submit_book_update">Update Section</button>
+        </form>
 
+
+          
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
     <!-- add Book Modal -->
     <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -104,6 +143,78 @@ export default {
         this.fetchSection();
     },
     methods: {
+        updatemodal(bookId) {
+            this.bookId = bookId;
+            this.bookName = this.books.find(book => book.id === bookId).name;
+            this.content = this.books.find(book => book.id === bookId).content;
+            this.author = this.books.find(book => book.id === bookId).author;
+            this.image = this.books.find(book => book.id === bookId).image;            
+        },
+        async submit_book_update() {
+            const bookData = {
+                name: this.bookName,
+                content: this.content,
+                author: this.author,
+                image: this.image,
+            };
+            try {
+                const response = await fetch('http://127.0.0.1:5000/book/' + this.bookId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Authentication-Token': localStorage.getItem('auth-token')
+                    },
+                    body: JSON.stringify(bookData)
+                });
+                if (!response.ok) {
+                    throw new Error('Unable to update book');
+                }
+                const data = await response.json();
+                console.log('Book updated successfully', data);
+                $('#exampleModal').modal('hide');
+                this.bookName = '';
+                this.content = '';
+                this.author = '';
+                this.image = '';
+                this.fetchSection();
+            } catch (error) {
+                console.error('Error updating book:', error);
+            }
+        },
+        confirmDelete(bookId) {
+      this.bookToDelete = bookId;
+      if(confirm('Are you sure you want to delete this book?')){
+        this.deletebook();
+
+      }
+    },
+
+    async deletebook() {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/book/${this.bookToDelete}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Authentication-Token': localStorage.getItem('auth-token')
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Unable to delete book');
+        }
+        const data = await response.json();
+        console.log('book deleted successfully', data);
+        this.fetchSection();
+      } catch (error) {
+        console.error('Error deleting section:', error);
+      }
+    },
+
+
+
+
+
         async fetchSection() {
             try {
                 // Fetch section and books data from the backend API
@@ -113,9 +224,12 @@ export default {
                 }
                 const data = await response.json();
                 console.log(data);
+                
                 this.section = data.name;
-                this.books = data.books;
+                // filter the delted books
 
+                this.books= data.books.filter(book => book.is_deleted === false);
+                console.log(this.books);
 
             } catch (error) {
                 console.error("Error fetching section:", error);

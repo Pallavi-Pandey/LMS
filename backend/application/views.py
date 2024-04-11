@@ -90,7 +90,7 @@ def add_book():
 #to get all books
 @app.route('/books', methods=['GET'])
 def get_books():
-    books = Book.query.all()
+    books = Book.query.filter_by(is_deleted=False).all()
     return jsonify([book.serialize() for book in books])
 
 #to get book by id
@@ -114,8 +114,10 @@ def update_book(id):
         book.name = book_data['name']
     if 'content' in book_data:
         book.content = book_data['content']
-    if 'author_id' in book_data:
-        book.author_id = book_data['author_id']
+    if 'author' in book_data:
+        book.author = book_data['author']
+    if 'image' in book_data:
+        book.image = book_data['image']
     db.session.commit()
     return jsonify({'message': 'Book updated successfully'})
 
@@ -126,7 +128,7 @@ def update_book(id):
 def delete_book(id):
     book = Book.query.get(id)
     if book:
-        db.session.delete(book)
+        book.is_deleted = True
         db.session.commit()
         return jsonify({'message': 'Book deleted successfully'})
     return jsonify({'error': 'Book not found'}), 404
@@ -153,7 +155,7 @@ def get_sections():
     for section in sections:
         section_data = marshal(section, section_marshal)
         section_data['books'] = []
-        for book in section.books:
+        for book in section.books and book.is_deleted==False:
             book_data = marshal(book, book_marshal)
             # Call the status method to get the status
             book_data['status'] = book.status(current_user.id)

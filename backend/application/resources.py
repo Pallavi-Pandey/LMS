@@ -39,7 +39,8 @@ book_marshal={
     'section_id': fields.Integer,
     'content': fields.String,
     'image': fields.String,
-    "status": fields.String
+    "status": fields.String,
+    'is_deleted': fields.Boolean
 }
 
 section_marshal={
