@@ -5,6 +5,9 @@
     <div class="row">
       <div class="col-md-12">
         <h2>My Current Books</h2>
+        <!-- to add a search bar -->
+        <label for="search">Search</label>
+        <input type="search" v-model="search" placeholder="Search">
         <table class="table">
 
           <thead>
@@ -43,7 +46,6 @@
               <th scope="col">Author</th>
               <th scope="col">Section</th>
               <th scope="col">Status</th>
-              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -55,9 +57,7 @@
               <td>{{ book.author_name }}</td>
               <td>{{ book.section_name }}</td>
               <td>{{ book.status }}</td>
-              <td>
-                <button v-if="book.status === 'approved'" type="button" class="btn btn-danger" @click="returnBook(book.book_id)">Return</button>
-              </td>
+             
 
             </tr>
           </tbody>
@@ -74,7 +74,6 @@
     <th scope="col">Author</th>
     <th scope="col">Section</th>
     <th scope="col">Status</th>
-    <th scope="col">Actions</th>
   </tr>
 </thead>
 <tbody>
@@ -86,9 +85,7 @@
     <td>{{ book.author_name }}</td>
     <td>{{ book.section_name }}</td>
     <td>{{ book.status }}</td>
-    <td>
-      <button v-if="book.status === 'approved'" type="button" class="btn btn-danger" @click="returnBook(book.book_id)">Return</button>
-    </td>
+
 
   </tr>
 </tbody>
@@ -141,8 +138,28 @@ export default {
       return books.filter(book => book.status === 'requested')
     },
     filter_my_completed_books(books){
-      return books.filter(book => book.status === 'completed')
+      return books.filter(book => book.status === 'returned')
     },
+    async returnBook(book_id) {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/return-book`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Authentication-Token": localStorage.getItem("auth-token"),
+          },
+          body: JSON.stringify({ book_id }),
+        });
+        if (!response.ok) {
+          throw new Error("Unable to return book");
+        }
+        this.fetchBooks();
+      } catch (error) {
+        console.error("Error returning book:", error);
+      }
+    
+    }, 
   },
 };
 
