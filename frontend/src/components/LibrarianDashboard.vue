@@ -18,7 +18,9 @@
               <div v-for="section in sections" :key="section.id">
                 <router-link :to="`/section/${section.id}`" class="section">{{ section.name }}</router-link>
                 <span class="badge bg-secondary">{{ section.books.length }}</span>Books
-                <button type="button" class="btn btn-info">Update</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"   @click="updatemodal(section.id)" >
+ Update
+</button>
                 <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
               </div>
             </ul>
@@ -29,6 +31,32 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="sectionName" class="form-label">Section Name</label>
+            <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
+          </div>
+          <button type="submit" class="btn btn-primary" @click="submit_section_update">Update Section</button>
+        </form>
+
+
+          
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- Add Section Modal -->
     <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel"
@@ -83,10 +111,48 @@ export default {
     return {
       sectionName: '',
       sections: [],
-      sectionToDelete: null
+      sectionToDelete: null,
+      sectionId: null
     };
   },
   methods: {
+  async  updatemodal(sectionId){
+    this.sectionName = this.sections.find(section => section.id === sectionId).name;
+    this.sectionId = sectionId;
+
+  },
+
+    
+    async submit_section_update(){
+      const sectionData = {
+        name: this.sectionName
+      };
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/section/${this.sectionId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Authentication-Token': localStorage.getItem('auth-token')
+          },
+          body: JSON.stringify(sectionData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Unable to update section');
+        }
+        const data = await response.json();
+        console.log('Section updated successfully', data);
+        $('#exampleModal').modal('hide');
+        this.sectionName = '';
+        this.getSections();
+
+          
+      } catch (error) {
+        console.error('Error updating section:', error);
+      }
+    },
+    
     async addSection() {
       const sectionData = {
         name: this.sectionName
