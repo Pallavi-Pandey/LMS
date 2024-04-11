@@ -162,6 +162,7 @@ def get_sections():
             section_data['books'].append(book_data)
         serialized_sections.append(section_data)
     print(serialized_sections)
+    print("a2222222222222222222")
 
     return jsonify(serialized_sections)
 
@@ -273,3 +274,19 @@ def reject_request(request_id):
 def my_books():
     books = BookRequest.query.filter_by(user_id=current_user.id).all()
     return jsonify([book.serialize() for book in books])
+
+
+@app.route("/return-book", methods=['POST'])
+@auth_required("token")
+@roles_required("stud")
+def return_book():
+    data = request.json
+    book_id = data.get('book_id')
+    user_id = current_user.id
+    book_request = BookRequest.query.filter_by(book_id=book_id, user_id=user_id).first()
+    if not book_request:
+        return jsonify({'error': 'Book request not found'}), 404
+
+    book_request.status = 'returned'
+    db.session.commit()
+    return jsonify({'message': 'Book returned successfully'})
