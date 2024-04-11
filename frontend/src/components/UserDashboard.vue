@@ -3,7 +3,9 @@
     <h1>Welcome to the Library</h1>
     <!-- to show the username -->
     <h2 style="color: blue;"> {{ user_email }} </h2>
-    <div v-for="section in sections" :key="section.id">
+    <!-- Search input -->
+    <input type="text" v-model="searchQuery" placeholder="Search books...">
+    <div v-for="section in filteredSections" :key="section.id">
       <h2>{{ section.name }}</h2>
       <div class="card-group">
         <div v-for="book in section.books" :key="book.id" class="card">
@@ -14,44 +16,48 @@
             <p class="card-text">{{ book.author }}</p>
             <p class="card-text"> Status : <b style="color: red;">{{ book.status }}</b></p>
             <!-- if requested show requested date , add a v-if-->
-            <!-- : Thu, 11 Apr 2024 11:51:15 GMT --> 
             <p v-if="book.status === 'requested'" class="card-text"> Requested on : {{ make_date_readable(book.requested_date) }}</p>
-            
             <p v-if="book.status === 'rented'" class="card-text"> Rented on : {{ book.rented_by }} </p>
             <p v-if="book.status === 'rented'" class="card-text"> Due Date : {{ book.requested_date }} </p>
-
-            
             <!-- if book is available show rent button, if requested show revoke button, if rented show return -->
             <button v-if="book.status === 'available'" @click="rent_book(book.id)" class="btn btn-primary">Rent</button>
             <button v-if="book.status === 'requested'" @click="revoke_book(book.id)" class="btn btn-danger">Revoke</button>
             <button v-if="book.status === 'rented'" @click="return_book(book.id)" class="btn btn-success">Return</button>
-            
-
-            <!-- <button @click="rent_book(book.id)" class="btn btn-primary">Rent</button> -->
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 export default {
   data() {
     return {
       sections: [],
       user_email: localStorage.getItem('email'),
+      searchQuery: ''
     };
   },
-  
-  
   created() {
     this.fetchSections();
+  },
+  computed: {
+    filteredSections() {
+      return this.sections.map(section => ({
+        ...section,
+        books: section.books.filter(book =>
+          book.name.toLowerCase().includes(this.searchQuery.toLowerCase())||
+          book.author.toLowerCase().includes(this.searchQuery.toLowerCase())||
+          book.content.toLowerCase().includes(this.searchQuery.toLowerCase())||
+          book.status.toLowerCase().includes(this.searchQuery.toLowerCase())           
+
+        )
+      })).filter(section => section.books.length > 0);
+    }
   },
   methods: {
     async fetchSections() {
       try {
-        // Fetch section and books data from the backend API
         const response = await fetch(`http://127.0.0.1:5000/sections`,{
           method: 'GET',
           headers: {
@@ -60,7 +66,6 @@ export default {
             'Authentication-Token': localStorage.getItem('auth-token')
           }
         });
-       
         if (!response.ok) {
           throw new Error("Unable to fetch section");
         }
@@ -72,7 +77,7 @@ export default {
         console.error("Error fetching section:", error);
       }
     },
-    async rent_book(book_id) {
+        async rent_book(book_id) {
       try {
         const response = await fetch('http://127.0.0.1:5000/rent-book', {
           method: 'POST',

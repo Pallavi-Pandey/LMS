@@ -5,9 +5,9 @@
     <div class="row">
       <div class="col-md-12">
         <h2>My Current Books</h2>
-        <!-- to add a search bar -->
-        <label for="search">Search</label>
-        <input type="search" v-model="search" placeholder="Search">
+        <!-- Search bar for current books -->
+        <label for="searchCurrent">Search</label>
+        <input type="search" v-model="searchCurrent" placeholder="Search Current Books">
         <table class="table">
 
           <thead>
@@ -21,8 +21,8 @@
             </tr>
           </thead>
           <tbody>
-            <!-- if book status is approved  show this-->
-            <tr v-for="book in filter_my_current_books(books)" :key="book.book_id">
+            <!-- Filtered current books based on search query -->
+            <tr v-for="book in filteredCurrentBooks" :key="book.book_id">
 
               <td>{{ book.book_id }}</td>
               <td>{{ book.book_title }}</td>
@@ -37,6 +37,9 @@
           </tbody>
         </table>
         <h2> Requested Books</h2>
+        <!-- Search bar for requested books -->
+        <label for="searchRequested">Search</label>
+        <input type="search" v-model="searchRequested" placeholder="Search Requested Books">
         <table class="table">
 
           <thead>
@@ -49,53 +52,51 @@
             </tr>
           </thead>
           <tbody>
-            <!-- if book status is approved  show this-->
-            <tr v-for="book in filter_my_requested_books(books)" :key="book.book_id">
+            <!-- Filtered requested books based on search query -->
+            <tr v-for="book in filteredRequestedBooks" :key="book.book_id">
 
               <td>{{ book.book_id }}</td>
               <td>{{ book.book_title }}</td>
               <td>{{ book.author_name }}</td>
               <td>{{ book.section_name }}</td>
               <td>{{ book.status }}</td>
-             
 
             </tr>
           </tbody>
         </table>
         
         <h2>My Completed Books</h2>
-        
+        <!-- Search bar for completed books -->
+        <label for="searchCompleted">Search</label>
+        <input type="search" v-model="searchCompleted" placeholder="Search Completed Books">
         <table class="table">
 
-<thead>
-  <tr>
-    <th scope="col">Book ID</th>
-    <th scope="col">Title</th>
-    <th scope="col">Author</th>
-    <th scope="col">Section</th>
-    <th scope="col">Status</th>
-  </tr>
-</thead>
-<tbody>
-  <!-- if book status is approved  show this-->
-  <tr v-for="book in filter_my_completed_books(books)" :key="book.book_id">
+          <thead>
+            <tr>
+              <th scope="col">Book ID</th>
+              <th scope="col">Title</th>
+              <th scope="col">Author</th>
+              <th scope="col">Section</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filtered completed books based on search query -->
+            <tr v-for="book in filteredCompletedBooks" :key="book.book_id">
 
-    <td>{{ book.book_id }}</td>
-    <td>{{ book.book_title }}</td>
-    <td>{{ book.author_name }}</td>
-    <td>{{ book.section_name }}</td>
-    <td>{{ book.status }}</td>
+              <td>{{ book.book_id }}</td>
+              <td>{{ book.book_title }}</td>
+              <td>{{ book.author_name }}</td>
+              <td>{{ book.section_name }}</td>
+              <td>{{ book.status }}</td>
 
-
-  </tr>
-</tbody>
-</table>
+            </tr>
+          </tbody>
+        </table>
 
       </div>
     </div>
   </div>
-
-
 
 </template>
 
@@ -105,10 +106,24 @@ export default {
   data() {
     return {
       books: [],
+      searchCurrent: '',
+      searchRequested: '',
+      searchCompleted: ''
     };
   },
   created() {
     this.fetchBooks();
+  },
+  computed: {
+    filteredCurrentBooks() {
+      return this.filterBooksBySearch(this.books.filter(book => book.status === 'approved'), this.searchCurrent);
+    },
+    filteredRequestedBooks() {
+      return this.filterBooksBySearch(this.books.filter(book => book.status === 'requested'), this.searchRequested);
+    },
+    filteredCompletedBooks() {
+      return this.filterBooksBySearch(this.books.filter(book => book.status === 'returned'), this.searchCompleted);
+    }
   },
   methods: {
     async fetchBooks() {
@@ -131,14 +146,13 @@ export default {
         console.error("Error fetching books:", error);
       }
     },
-    filter_my_current_books(books){
-      return books.filter(book => book.status === 'approved')
-    },
-    filter_my_requested_books(books){
-      return books.filter(book => book.status === 'requested')
-    },
-    filter_my_completed_books(books){
-      return books.filter(book => book.status === 'returned')
+    filterBooksBySearch(books, searchQuery) {
+      if (!searchQuery) return books;
+      return books.filter(book => 
+        book.book_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.section_name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     },
     async returnBook(book_id) {
       try {
@@ -158,13 +172,8 @@ export default {
       } catch (error) {
         console.error("Error returning book:", error);
       }
-    
     }, 
   },
 };
 
-
-
-
 </script>
-
