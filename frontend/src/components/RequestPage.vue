@@ -24,7 +24,9 @@
                                    <!-- add approve and reject call the  functions for the buttons on click -->
                                     <button v-if="request.status==='requested'" type="button" class="btn btn-success" @click="approveRequest(request.id)">Approve</button>
                                     <button v-if="request.status==='requested'" type="button" class="btn btn-danger" @click="rejectRequest(request.id)">Reject</button>
-
+                                    <button v-else-if="request.status==='approved'" type="button" class="btn btn-secondary" @click="revokeAccess(request.id)">Revoke</button>
+                                    <!-- else show no-actions -->
+                                    <p v-else>No Actions</p>
                                 </td>
 
                             </tr>
@@ -70,6 +72,26 @@ export default {
         readable_date(date){
             return new Date(date).toLocaleDateString()
         },
+        async revokeAccess(requestId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/revoke-access/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Authentication-Token': localStorage.getItem('auth-token')
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Unable to revoke request');
+                }
+                console.log('Request revoked successfully');
+                this.getRequests();
+            } catch (error) {
+                console.error('Error revoking request:', error);
+            }
+        },
+
         async approveRequest(requestId) {
             try {
                 const response = await fetch(`http://127.0.0.1:5000/approve-request/${requestId}`, {
@@ -85,6 +107,9 @@ export default {
                 }
                 console.log('Request approved successfully');
                 this.getRequests();
+                // refresh the requests
+                // relod the page
+                window.location.reload();
             } catch (error) {
                 console.error('Error approving request:', error);
             }
@@ -105,7 +130,15 @@ export default {
                 }
                 console.log('Request rejected successfully');
                 this.getRequests();
-            } catch (error) {
+                window.location.reload();
+            }
+            // ValueError
+
+             
+
+
+            catch (error) {
+                
                 console.error('Error rejecting request:', error);
             }
         },

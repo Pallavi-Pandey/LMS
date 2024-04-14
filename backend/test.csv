@@ -1,6 +1,5 @@
-email,get_user_role
-admin@email.com,admin
-stud1@email.com,stud
-stud2@email.com,stud
-aswin@gmail.com,stud
-pallavi@gmail.com,stud
+email,get_user_role,books_requested
+admin@email.com,admin,0
+stud1@email.com,stud,0
+stud2@email.com,stud,0
+pallavipandey181@gmail.com,stud,3

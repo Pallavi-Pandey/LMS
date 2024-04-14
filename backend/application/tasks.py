@@ -1,7 +1,8 @@
+import datetime
 from celery import shared_task
 import flask_excel as excel
 from .mail_service import send_email_attachment
-from .models import User, Role
+from .models import BookRequest, User, Role,db
 from jinja2 import Template
 from celery import shared_task
 
@@ -14,7 +15,7 @@ def create_resource_csv():
     
 
     csv_output = excel.make_response_from_query_sets(
-        all_users, ['email', 'get_user_role'], 'csv')
+        all_users, ['email', 'get_user_role','books_requested'], 'csv')
     
     filename = "test.csv"
 
@@ -37,4 +38,20 @@ def daily_reminder(to, subject):
     return "OK"
 
 
+
 @shared_task(ignore_result=True)
+def another_task():
+    # Task logic here
+    print("This task runs every 10 seconds")
+    return "OK"
+
+
+@shared_task(ignore_result=True)
+def revoke_access():
+    requests=BookRequest.query.filter_by(status='approved').all()
+    for book_request in requests:
+        if datetime.datetime.now() - book_request.requested_date > datetime.timedelta(days=7):
+            book_request.status = 'revoked'
+    db.session.commit()
+    return "OK"
+

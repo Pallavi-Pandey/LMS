@@ -1,3 +1,4 @@
+import datetime
 import smtplib
 from flask import current_app as app, jsonify, make_response, request, render_template, send_file
 from flask_security import auth_required, roles_required
@@ -58,7 +59,12 @@ def user_login():
         return jsonify({"message": "User Not Found"}), 404
 
     if check_password_hash(user.password, data.get("password")):
+        # to return the token with expiry time as 1 hour
+        user.last_login_at = datetime.datetime.now()
+        db.session.commit()
         return jsonify({"token": user.get_auth_token(), "email": user.email, "role": get_user_roles(user.roles)})
+
+        # return jsonify({"token": user.get_auth_token(), "email": user.email, "role": get_user_roles(user.roles)})
     else:
         return jsonify({"message": "Wrong Password"}), 400
     
@@ -79,7 +85,6 @@ def admin():
 @auth_required("token")
 @roles_required("stud")
 def stud():
-    print(current_user.email)
     return "Hello "+current_user.email
 
 #-----------------------------------------------------------------------For Librarian------------------------------------------------------------------------------------------
@@ -89,12 +94,14 @@ def stud():
 @roles_required("admin")
 def add_book():
     book_data = request.json
-    print(book_data,"aaaa")
     if 'name' not in book_data or 'content' not in book_data or 'author' not in book_data or 'section_id' not in book_data or 'image' not in book_data:
         return jsonify({'error': 'Missing required fields'}), 400
-    new_book = Book(name=book_data['name'], content=book_data['content'], author=book_data['author'],section_id=book_data['section_id'], image=book_data['image'])
+    new_book = Book(name=book_data['name'], full_content=book_data['content'], author=book_data['author'],section_id=book_data['section_id'], image=book_data['image'])
     db.session.add(new_book)
+
     db.session.commit()
+    # remove cache
+    cache.clear()
     return jsonify({'message': 'Book added successfully'}), 201
 
 #to get all books
@@ -136,13 +143,15 @@ def update_book(id):
     book_data = request.json
     if 'name' in book_data:
         book.name = book_data['name']
-    if 'content' in book_data:
-        book.content = book_data['content']
+    if 'full_content' in book_data:
+        book.full_content = book_data['full_content']
     if 'author' in book_data:
         book.author = book_data['author']
     if 'image' in book_data:
         book.image = book_data['image']
     db.session.commit()
+    # Clear the cache
+    cache.clear()
     return jsonify({'message': 'Book updated successfully'})
 
 #to delete book by id
@@ -155,6 +164,7 @@ def delete_book(id):
         book.is_deleted = True
         db.session.commit()
         return jsonify({'message': 'Book deleted successfully'})
+    cache.clear()
     return jsonify({'error': 'Book not found'}), 404
 
 #to add section
@@ -176,22 +186,20 @@ def add_section():
 @cache.cached(timeout=100)
 @auth_required("token")
 def get_sections(): 
-    sections = Section.query.filter_by(is_deleted=False).all()
+    sections = Section.query.filter_by(is_deleted=False).all()[::-1]
     serialized_sections = []
     for section in sections:
         section_data = marshal(section, section_marshal)
         section_data['books'] = []
-        for book in section.books:
+        for book in section.books[::-1]:
             if not book.is_deleted:
                 book_data = marshal(book, book_marshal)
                 # Call the status method to get the status
                 book_data['status'] = book.status(current_user.id)
                 book_data['requested_date'] = book.requested_date(current_user.id)
-                print(book.status,"status")
                 section_data['books'].append(book_data)
         serialized_sections.append(section_data)
-    print(serialized_sections)
-    print("a2222222222222222222")
+
 
     return jsonify(serialized_sections)
 
@@ -244,14 +252,28 @@ def rent_book():
     book_id = data.get('book_id')
     user_id = current_user.id
     book = Book.query.get(book_id)
-    if not book:
-        return jsonify({'error': 'Book not found'}), 404
+    try:
+        if not book:
+            return jsonify({'error': 'Book not found'}), 404
+        print("adter if book")
+        book_request = BookRequest(book_id=book_id, user_id=user_id,status='requested',requested_date=db.func.current_timestamp())
+        print("adter book request")
 
-    book_request = BookRequest(book_id=book_id, user_id=user_id,status='requested',requested_date=db.func.current_timestamp())
-    db.session.add(book_request)
-    db.session.commit()
+        db.session.add(book_request)
+        print("adter adding")
     
+        db.session.commit()
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 223
     return jsonify({'message': 'Book renting requested successfully'}), 201
+
+@app.route('/books-rented')
+@auth_required("token")
+@roles_required("stud")
+def books_rented():
+    # count of books rented by a user , status should be approved or requested
+    books_rented = BookRequest.query.filter_by(user_id=current_user.id).filter(BookRequest.status.in_(['requested', 'approved'])).count()
+    return jsonify({'books_rented': books_rented})
 
 # return a book
 @app.route('/revoke-book', methods=['POST'])
@@ -268,6 +290,7 @@ def revoke_book():
     # remove the book request
     db.session.delete(book_request)
     db.session.commit()
+    cache.clear()
     return jsonify({'message': 'Book renting revoked successfully'})
 
 # get all book requests
@@ -287,6 +310,7 @@ def approve_request(request_id):
         return jsonify({'error': 'Request not found'}), 404
     request.status = 'approved'
     db.session.commit()
+    cache.clear()
     return jsonify({'message': 'Request approved successfully'})
 
 @app.route('/reject-request/<int:request_id>', methods=['PUT'])
@@ -298,6 +322,7 @@ def reject_request(request_id):
         return jsonify({'error': 'Request not found'}), 404
     request.status = 'rejected'
     db.session.commit()
+    cache.clear()
     return jsonify({'message': 'Request rejected successfully'})
 
 @app.route("/my-books", methods=['GET'])
@@ -321,6 +346,7 @@ def return_book():
 
     book_request.status = 'returned'
     db.session.commit()
+    cache.clear()
     return jsonify({'message': 'Book returned successfully'})
 
 @app.route("/aa")
@@ -351,3 +377,39 @@ def aa():
     data["end_date"]="2024-05-06"
     send_email_attachment(data["email"], 'Your PDF Attachment', 'Please find attached PDF', data)
     return 'Email sent successfully!'
+
+@app.route("/full-book/<int:book_id>")
+@auth_required("token")
+def full_book(book_id):
+    user=current_user
+    print(user)
+    if not book_id in user.user_accessible_books:
+        return jsonify({'error': 'Book not found'}), 404
+    # validation to check if the book is accessible or not
+    book = Book.query.get(book_id)
+    
+    data={
+        "content":book.full_content,
+    }
+    if not book:
+        return jsonify({'error': 'Book not found'}), 404
+    return jsonify(data)
+
+@app.route("/revoke-access/<int:book_id>", methods=['PUT'])
+@auth_required("token")
+def revoke_request(book_id):
+    user_id = current_user.id
+    book_request = BookRequest.query.get(book_id)
+    print("aaaaaaaa",book_request)
+    if not book_request:
+        return jsonify({'error': 'Book request not found'}), 404
+
+    # remove the book request
+    book_request.status='access-revoked'
+    try:
+        db.session.commit()
+    except Exception as e:
+        print(e)
+        return jsonify({'error': 'Book request not found'}), 404
+    cache.clear()
+    return jsonify({'message': 'Book renting revoked successfully'})

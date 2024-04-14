@@ -3,7 +3,7 @@
     <div class="row">
     <div class="col-md-12 d-flex justify-content-between align-items-center">
         <h1>Librarian Dashboard</h1>
-        <div><button @click="downloadResource">Download Resource</button><span v-if="isWaiting"> Waiting... </span></div>
+        <div><button @click="downloadResource">Download CSV</button><span v-if="isWaiting"> Waiting... </span></div>
     </div>
 </div>
 
@@ -18,7 +18,7 @@
           <div class="card-body">
             <ul>
               <div v-for="section in sections" :key="section.id">
-                <router-link :to="`/section/${section.id}`" class="section">{{ section.name }}</router-link>
+                <router-link :to="`/section/${section.id}`" class="section">{{ section.name }} </router-link>
                 <span class="badge bg-secondary">{{ section.books.length }}</span>Books
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"   @click="updatemodal(section.id)" >
  Update
@@ -211,7 +211,7 @@ export default {
 
     },
     async deleteSection() {
-      try {
+      try {get_full_book
         const response = await fetch(`http://127.0.0.1:5000/delete-section/${this.sectionToDelete}`, {
           method: 'DELETE',
           headers: {

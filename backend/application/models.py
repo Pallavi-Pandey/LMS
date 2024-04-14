@@ -2,6 +2,8 @@ from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
+from sqlalchemy.orm import validates
+
 
 db = SQLAlchemy()
 
@@ -12,6 +14,22 @@ class RolesUsers(db.Model):
     user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
     role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
+    # @validates('role_id')
+    # def validate_role_id(self, key, role_id):
+    #     if role_id == 1:
+    #         raise ValueError("Role id 1 is reserved for admin")
+    #     return role_id
+    
+    # add constraint that only one user can be admin
+    @validates('user_id', 'role_id')
+    def validate_user_role(self, key, value):
+        if key == 'role_id':
+            if value == 1:
+                admin_count = RolesUsers.query.filter_by(role_id=1).count()
+                if admin_count > 0:
+                    raise ValueError("Only one user can be admin")
+        return value
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -20,7 +38,18 @@ class User(db.Model, UserMixin):
     active = db.Column(db.Boolean(), default=True)
     authenticated = db.Column(db.Boolean())
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
+    last_login_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary="role_users", backref=db.backref('users', lazy='dynamic'))
+
+    # to add a validation that only one user can be admin
+    @validates('roles')
+    def validate_roles(self, key, roles):
+        if len(roles) > 1:
+            raise ValueError("Only one role can be assigned to a user")
+        return roles
+    
+    
+
 
     def get_id(self):
         return str(self.id)
@@ -32,7 +61,19 @@ class User(db.Model, UserMixin):
     @property
     def get_user_role(self):
         return self.roles[0].name
+    
+    @property
+    def books_requested(self):
+        return BookRequest.query.filter_by(user_id=self.id, status='requested').count()
 
+    @property
+    def user_accessible_books(self):
+        accessible_books = []
+        BookRequest.query.filter_by(user_id=self.id).all()
+        for book_request in BookRequest.query.filter_by(user_id=self.id).all():
+            accessible_books.append(book_request.book_id)
+        return accessible_books
+        
 class Role(db.Model, RoleMixin):
     __tablename__ = 'role'
     id = db.Column(db.Integer(), primary_key=True)
@@ -42,6 +83,9 @@ class Role(db.Model, RoleMixin):
 class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
+    date_created= db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+    description = db.Column(db.Text)
+
     books= db.relationship('Book', backref=db.backref('section', lazy=True))
     is_deleted = db.Column(db.Boolean, default=False)
 
@@ -56,10 +100,14 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text)
+    full_content = db.Column(db.Text)
     image = db.Column(db.String(100))
     author= db.Column(db.String(100), nullable=False)
     is_deleted = db.Column(db.Boolean, default=False)
+
+    @property
+    def content(self):
+        return self.full_content[:1000]
 
     def serialize(self):
         return {
@@ -121,6 +169,22 @@ class BookRequest(db.Model):
             'author_name': self.author_name,
             'section_name': self.section_name
         }
+    
+    # add constraint that total books requested or approved by a user should not exceed 5
+
+    @validates('status')
+    def validate_status(self, key, status):
+        if status not in ['requested', 'approved', 'rejected', 'revoke']:
+            raise ValueError("Invalid status value")
+        return status
+    
+    @validates('user_id', 'book_id')
+    def validate_user_book(self, key, value):
+        if key == 'user_id':
+            user_requests_count = BookRequest.query.filter_by(user_id=value).filter(BookRequest.status.in_(['requested', 'approved'])).count()
+            if user_requests_count >= 5:
+                raise ValueError("User has already requested/approved 5 books")
+        return value
 
 
 class BookAccessHistory(db.Model):

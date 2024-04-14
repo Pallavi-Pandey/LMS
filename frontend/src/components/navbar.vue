@@ -6,16 +6,12 @@
       <a class="navbar-brand">Pallavi Library Management</a>
 
       <!-- Search Form -->
-      <form class="d-flex search-form" role="search">
-        <input class="form-control me-2 search-input" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success search-btn" type="submit">Search</button>
-      </form>
-
+      
       <!-- Navbar Links -->
       <div class="navbar-links">
         <div v-if="role === 'admin'" class="admin-links">
           <router-link to="/librarian-dashboard" class="nav-link">Dashboard</router-link>
-          <router-link to="/requests" class="nav-link">Requests</router-link>
+          <router-link to="/requests" class="nav-link">Requests <span style="color: red; border: 2px solid black;padding:2px 10px; "> {{ no_of_requests }}</span> </router-link>
           <router-link to="/status" class="nav-link">Stats</router-link>
         </div>
         <div v-else-if="role === 'stud'" class="student-links">
@@ -38,11 +34,16 @@ export default {
     return {
       role: "",
       is_login: "",
+      no_of_requests: 0,
     };
   },
   created() {
     this.role = localStorage.getItem('role');
     this.is_login = localStorage.getItem('auth-token') !== null;
+    if (this.role === 'admin'){
+      this.fetch_requests();
+    }
+    
   },
   methods: {
     logout() {
@@ -51,8 +52,25 @@ export default {
       // reload
       this.$router.push({ path: '/login' });
     },
+    fetch_requests() {
+      fetch('http://127.0.0.1:5000/requests',{
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Authentication-Token': localStorage.getItem('auth-token')
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          // filter unapproved requests
+          data = data.filter(request => request.status === 'requested');
+          this.no_of_requests = data.length;
+        });
+      
+  }
   },
-};
+}
 </script>
 
 <style scoped>
