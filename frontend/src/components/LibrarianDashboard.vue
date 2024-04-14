@@ -1,10 +1,12 @@
 <template>
   <div class="container-fluid bg-light p-3">
     <div class="row">
-      <div class="col-md-12">
+    <div class="col-md-12 d-flex justify-content-between align-items-center">
         <h1>Librarian Dashboard</h1>
-      </div>
+        <div><button @click="downloadResource">Download Resource</button><span v-if="isWaiting"> Waiting... </span></div>
     </div>
+</div>
+
 
     <!-- Section Management -->
     <div class="row">
@@ -112,7 +114,8 @@ export default {
       sectionName: '',
       sections: [],
       sectionToDelete: null,
-      sectionId: null
+      sectionId: null,
+      isWaiting: false,
     };
   },
   methods: {
@@ -121,6 +124,23 @@ export default {
     this.sectionId = sectionId;
 
   },
+  async downloadResource() {
+      this.isWaiting = true
+      const res = await fetch('http://127.0.0.1:5000/download-csv')
+      const data = await res.json()
+      console.log("inside download resource", data)
+      if (res.ok) {
+        const taskId = data['task-id']
+        const intv = setInterval(async () => {
+          const csv_res = await fetch(`http://127.0.0.1:5000/get-csv/${taskId}`)
+          if (csv_res.ok) {
+            this.isWaiting = false
+            clearInterval(intv)
+            window.location.href = `http://127.0.0.1:5000/get-csv/${taskId}`
+          }
+        }, 1000)
+      }
+    },
 
     
     async submit_section_update(){

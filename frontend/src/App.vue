@@ -11,13 +11,21 @@
   </div>
 </template>
 
-<script>
 
+<script>
 import navbar from "./components/navbar.vue";
 export default {
   name: "App",
   components: {
     navbar,
   },
+  data() {
+    return {
+      isNavbarLoaded: false
+    };
+  },
+  mounted() {
+    this.isNavbarLoaded = true;
+  }
 };
 </script>

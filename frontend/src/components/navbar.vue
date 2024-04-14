@@ -36,9 +36,13 @@ import router from '@/router';
 export default {
   data() {
     return {
-      role: localStorage.getItem('role'),
-      is_login: localStorage.getItem('auth-token'),
+      role: "",
+      is_login: "",
     };
+  },
+  created() {
+    this.role = localStorage.getItem('role');
+    this.is_login = localStorage.getItem('auth-token') !== null;
   },
   methods: {
     logout() {

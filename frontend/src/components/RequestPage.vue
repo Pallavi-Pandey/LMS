@@ -3,7 +3,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h1>Requests</h1>
+                    <h1 class="request-heading" >Requests</h1>
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -116,6 +116,69 @@ export default {
     }
 };
 
-
-
 </script>
+<style>
+    .request-heading {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Style the table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Style the table header */
+th {
+    background-color: #7eaad6;
+    color: #fff;
+    padding: 12px;
+    text-align: left;
+}
+
+/* Style the table cells */
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd; /* Add a bottom border to separate rows */
+}
+
+/* Style alternating rows */
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Hover effect on rows */
+tr:hover {
+    background-color: #ddd;
+}
+
+/* Style the buttons */
+.btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Style the approve button */
+.btn-success {
+    background-color: #5cb8a9;
+    border: 1px solid #4cae99;
+    color: #fff;
+}
+
+/* Style the reject button */
+.btn-danger {
+    background-color: #d9534f;
+    border: 1px solid #d43f3a;
+    color: #fff;
+}
+
+/* Adjust button margins */
+.btn {
+    margin-right: 5px;
+}
+
+    
+</style>

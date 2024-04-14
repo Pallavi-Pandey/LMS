@@ -1,4 +1,5 @@
-from flask import current_app as app, jsonify, request, render_template, send_file
+import smtplib
+from flask import current_app as app, jsonify, make_response, request, render_template, send_file
 from flask_security import auth_required, roles_required
 from werkzeug.security import check_password_hash
 from flask_security import auth_required, roles_required, current_user
@@ -6,11 +7,13 @@ from flask_security import auth_required, roles_required, current_user
 from flask_restful import marshal, fields
 import flask_excel as excel
 from celery.result import AsyncResult
+
+from application.mail_service import send_email_attachment
 from .tasks import create_resource_csv
 from .models import Book, Section, User, db,BookRequest,BookAccessHistory,BookRating
 from werkzeug.security import generate_password_hash
 from .resources import section_marshal,book_marshal
-
+from .instances import cache
 from .sec import datastore
 
 
@@ -59,6 +62,13 @@ def user_login():
     else:
         return jsonify({"message": "Wrong Password"}), 400
     
+@app.get('/download-csv')
+def csv_download():
+    import time 
+    print("inisde download csv")
+    task = create_resource_csv.delay()
+    return jsonify({"task-id": task.id})
+
 @app.get('/admin')
 @auth_required("token")
 @roles_required("admin")
@@ -100,6 +110,20 @@ def get_book(id):
     if book:
         return jsonify(book.serialize())
     return jsonify({'error': 'Book not found'}), 404
+
+
+@app.get('/get-csv/<task_id>')
+def get_csv(task_id):
+    res = AsyncResult(task_id)
+    print("inside get csv")
+    if res.ready():
+        filename = res.result
+        print("ready",filename)
+        return send_file(filename, as_attachment=True)
+        
+    else:
+        print("not ready")
+        return jsonify({"message": "Task Pending"}), 404
 
 #to update book by id
 @app.route('/book/<int:id>', methods=['PUT'])
@@ -144,24 +168,27 @@ def add_section():
     new_section = Section(name=section_data['name'])
     db.session.add(new_section)
     db.session.commit()
+    cache.clear()
     return jsonify({'message': 'Section added successfully'}), 201
 
 #to get all sections
 @app.route('/sections', methods=['GET'])
+@cache.cached(timeout=100)
 @auth_required("token")
-def get_sections():
+def get_sections(): 
     sections = Section.query.filter_by(is_deleted=False).all()
     serialized_sections = []
     for section in sections:
         section_data = marshal(section, section_marshal)
         section_data['books'] = []
-        for book in section.books and book.is_deleted==False:
-            book_data = marshal(book, book_marshal)
-            # Call the status method to get the status
-            book_data['status'] = book.status(current_user.id)
-            book_data['requested_date'] = book.requested_date(current_user.id)
-            print(book.status,"status")
-            section_data['books'].append(book_data)
+        for book in section.books:
+            if not book.is_deleted:
+                book_data = marshal(book, book_marshal)
+                # Call the status method to get the status
+                book_data['status'] = book.status(current_user.id)
+                book_data['requested_date'] = book.requested_date(current_user.id)
+                print(book.status,"status")
+                section_data['books'].append(book_data)
         serialized_sections.append(section_data)
     print(serialized_sections)
     print("a2222222222222222222")
@@ -190,6 +217,8 @@ def update_section(id):
     if 'name' in section_data:
         section.name = section_data['name']
     db.session.commit()
+    # Clear the cache
+    cache.clear()
     return jsonify({'message': 'Section updated successfully'})
 
 #to delete section by id
@@ -202,6 +231,7 @@ def delete_section(id):
         section.is_deleted = True
         db.session.commit()
         return jsonify({'message': 'Section deleted successfully'})
+    cache.clear()
     return jsonify({'error': 'Section not found'}), 404
 
 
@@ -292,3 +322,32 @@ def return_book():
     book_request.status = 'returned'
     db.session.commit()
     return jsonify({'message': 'Book returned successfully'})
+
+@app.route("/aa")
+@cache.cached(timeout=20)
+def ala():
+    print('aaaaaaaaaaaaaaa')
+    return "aammmmss"
+
+
+from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
+from weasyprint import HTML
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+import os
+
+
+
+
+@app.route("/pdfa")
+def aa():
+    # Render your HTML template
+    data={}
+    data["email"]="gokulakrishnanm1998@gmail.com"
+    data["name"]="Gokulakrishnan"
+    data["start_date"]="2024-02-06"
+    data["end_date"]="2024-05-06"
+    send_email_attachment(data["email"], 'Your PDF Attachment', 'Please find attached PDF', data)
+    return 'Email sent successfully!'

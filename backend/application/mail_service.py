@@ -1,19 +1,58 @@
+from email.mime.application import MIMEApplication
 from smtplib import SMTP
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
+import smtplib
 
-SMTP_HOST = "localhost"
-SMTP_PORT = 1025
-SENDER_EMAIL = 'narendr@study.iitm.ac.in'
-SENDER_PASSWORD = ''
+from flask import make_response, render_template
+from weasyprint import HTML
+
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 465
+SENDER_EMAIL = 'pallavipandey181@gmail.com'
+SENDER_PASSWORD = os.getenv('APP_PASSWORD')
+
+def create_pdf(data, filename):
+    rendered_html = render_template('newpdf.html',email=data["email"], name=data['name'], 
+                           start_date=data['start_date'], end_date=data['end_date'])
+
+    # Convert rendered HTML to PDF using WeasyPrint
+    pdf_content = HTML(string=rendered_html).write_pdf()
+    # to save the pdf
+    with open(data['email']+'.pdf', 'wb') as f:
+        f.write(pdf_content)
 
 
-def send_message(to, subject, content_body):
+    # Create response
+    response = make_response(pdf_content)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+
+    return response
+
+def send_email_attachment(To, subject, message, data):
     msg = MIMEMultipart()
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg["From"] = SENDER_EMAIL
-    msg.attach(MIMEText(content_body, 'html'))
-    client = SMTP(host=SMTP_HOST, port=SMTP_PORT)
-    client.send_message(msg=msg)
-    client.quit()
+    sender = 'iammaitreyee1@gmail.com'
+    msg['From'] = sender
+    msg['To'] = To
+    msg['Subject'] = subject
+    file_name = To + '.pdf'
+    create_pdf(data, file_name)
+    msg.attach(MIMEText(message))
+    filename = file_name
+    path = os.path.join(os.getcwd(), filename)
+    with open(path, 'rb') as f:
+        attachment = MIMEApplication(f.read(), _subtype='pdf')
+        attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+        msg.attach(attachment)
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587
+    smtp_username = 'iammaitreyee1@gmail.com'
+    smtp_password = 'oyxdqxguccbiubuz'
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.sendmail(sender, To, msg.as_string())
+
