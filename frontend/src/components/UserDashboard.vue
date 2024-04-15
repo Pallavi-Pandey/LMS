@@ -28,21 +28,60 @@
                   class="btn btn-primary">Rent</button>
                 <button v-if="book.status === 'requested'" @click="revoke_book(book.id)"
                   class="btn btn-danger">Revoke</button>
-                <button v-if="book.status === 'approved'" @click="return_book(book.id)"
-                  class="btn btn-success">Return</button>
+
+                <!-- <button v-if="book.status === 'approved'" @click="return_book(book.id)"
+                  class="btn btn-success">Return</button> -->
+                  <button v-if="book.status === 'approved'" type="button" class="btn btn-secondary" @click="set_review_modal_data(book.id)" data-bs-toggle="modal" data-bs-target="#reviewBookModal">
+                    Review & Return
+            </button>
                 <button v-if="book.status === 'approved'" type="button" class="btn btn-primary" data-bs-toggle="modal"
-                  data-bs-target="#ViewFullBook" @click="get_full_book(book.id)">View Full Book</button>
+                  data-bs-target="#ViewFullBook" @click="get_full_book(book.id,book.name)">View Full Book</button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="modal fade" id="reviewBookModal" tabindex="-1" aria-labelledby="reviewBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="reviewBookModalLabel">Review  & Return</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="addBook">
+                        
+                       
+                        <!-- Rating 1 to 5 -->
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating (1-5)</label>
+                            <input type="number" class="form-control" id="rating" v-model.trim="rating" required>
+                        </div>
+                        <!-- image link -->
+                        <div class="mb-3">
+                            <label for="image" class="form-label">FeedBack</label>
+                            <input type="text" class="form-control" id="feedback" v-model.trim="feedback" required>
+                        </div>
+                        <button  @click="add_feedback(rating,feedback,review_modal_book_id)" class="btn btn-primary">Add Feedback & Return</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        id="closebookmodal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="ViewFullBook" tabindex="-1" aria-labelledby="ViewFullBookLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5" id="ViewFullBookLabel">Book Details</h1>
+            <!-- dowmload -->
+      
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<h2 class="btn btn-secondary" @click="download_book_as_pdf(full_book_modal_content,full_book_modal_name)">Download  {{ full_book_modal_name }}</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -57,6 +96,8 @@
   </div>
 </template>
 <script>
+import jsPDF from 'jspdf';
+
 export default {
   data() {
     return {
@@ -64,7 +105,11 @@ export default {
       user_email: localStorage.getItem('email'),
       searchQuery: '',
       full_book_modal_content: '',
-      books_rented: 0
+      full_book_modal_name: '',
+      books_rented: 0,
+      review_modal_book_id: null,
+      rating:"",
+      feedback:""
     };
   },
   created() {
@@ -82,9 +127,55 @@ export default {
 
         )
       })).filter(section => section.books.length > 0);
-    }
+    },
+
+
   },
   methods: {
+    add_feedback(rating,feedback,bookId){
+      console.log(rating,feedback,bookId)
+      fetch('http://127.0.0.1:5000/add-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Authentication-Token': localStorage.getItem('auth-token')
+        },
+        body: JSON.stringify({ "rating": rating, "feedback": feedback, "book_id": bookId })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Feedback added successfully', data);
+          alert('Feedback added successfully');
+          document.getElementById('closebookmodal').click();
+          this.rating="";
+          this.feedback="";
+          this.return_book(bookId);
+           
+        })
+        .catch(error => {
+          console.error('Error adding feedback:', error);
+        });
+    },
+
+    set_review_modal_data(bookId){
+      this.review_modal_book_id=bookId;
+    },
+    download_book_as_pdf(content,bookname) {
+    console.log(content);
+    var pdf = new jsPDF();
+    var textLines = pdf.splitTextToSize(content, pdf.internal.pageSize.width - 20); // Adjust width as needed
+    var y = 10;
+    for (var i = 0; i < textLines.length; i++) {
+        if (y + 10 > pdf.internal.pageSize.height) { // Check if new page needed
+            pdf.addPage();
+            y = 10;
+        }
+        pdf.text(10, y, textLines[i]);
+        y += 10;
+    }
+    pdf.save(bookname+".pdf");
+},
     add_7_days(date) {
       return new Date(date).setDate(new Date(date).getDate() + 7);
     },
@@ -99,7 +190,17 @@ export default {
       return remaining_days;
     },
 
-    async get_full_book(bookId) {
+
+    get_book_name_by_id(bookId){
+      
+      console.log(bookId)
+      console.log(this.sections)
+      
+      return this.sections.map(section => section.books.filter(book => book.id == bookId)[0].name)[0];
+    },
+    
+
+    async get_full_book(bookId,book_name) {
       // fetch book content
       try {
         const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`, {
@@ -116,6 +217,7 @@ export default {
         const data = await response.json();
         console.log(data);
         this.full_book_modal_content = data.content;
+        this.full_book_modal_name=book_name;
       } catch (error) {
         console.error('Error fetching book:', error);
       }

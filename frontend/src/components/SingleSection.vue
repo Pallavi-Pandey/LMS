@@ -18,7 +18,7 @@
                             <p class="card-text">{{ book.author }}</p>
                             <div class="d-flex justify-content-between">
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#ViewBook" @click="setmodalcontent(book.content)">
+                                    data-bs-target="#ViewBook" @click="setmodalcontent(book.content,book.name,book.id)">
                                     View Book Sample
                                 </button>
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal"
@@ -29,7 +29,7 @@
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#ViewFullBook" @click="get_full_book(book.id)">
+                                    data-bs-target="#ViewFullBook" @click="get_full_book(book.id,book.name)">
                                     View Full Book
                                 </button>
 
@@ -47,7 +47,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel"> {{ modal_title }}</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -62,8 +62,11 @@
     <div class="modal fade" id="ViewFullBook" tabindex="-1" aria-labelledby="ViewFullBook" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <div class="modal-header" style="align-items: center;justify-content: space-between;">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Book Name: {{ full_book_view_book_name }}</h1>
+                    <!-- download  book-->
+                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+                    <button type="button" class="btn btn-primary" @click="download_book_as_pdf(full_book_modal_content,full_book_view_book_name)">Download {{ full_book_view_book_name }}</button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -93,7 +96,7 @@
                             <input type="text" class="form-control" id="author" v-model.trim="author" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Content</label>
+                            <label for="content" class="form-label">Full Content</label>
                             <textarea class="form-control" id="content" v-model.trim="full_book_modal_content" required></textarea>
                         </div>
                         <!-- image link -->
@@ -173,7 +176,10 @@
 
 <script>
 // to get section if from url
+import jsPDF from 'jspdf';
+
 export default {
+
     data() {
         return {
             sectionId: this.$route.params.id,
@@ -184,6 +190,10 @@ export default {
             author: '',
             image: '',
             modal_content: '',
+            modal_title:'',
+            modal_book_id:"",
+            full_book_view_book_name:"",
+            full_book_view_book_id:"",
             full_book_modal_content: '',
 
         };
@@ -192,8 +202,26 @@ export default {
         this.fetchSection();
     },
     methods: {
-        async get_full_book(bookId) {
+        download_book_as_pdf(content,bookname) {
+    console.log(content);
+    var pdf = new jsPDF();
+    var textLines = pdf.splitTextToSize(content, pdf.internal.pageSize.width - 20); // Adjust width as needed
+    var y = 10;
+    for (var i = 0; i < textLines.length; i++) {
+        if (y + 10 > pdf.internal.pageSize.height) { // Check if new page needed
+            pdf.addPage();
+            y = 10;
+        }
+        pdf.text(10, y, textLines[i]);
+        y += 10;
+    }
+    pdf.save(bookname+".pdf");
+},
+        
+        async get_full_book(bookId,book_name) {
             // fetch book content
+            this.full_book_view_book_name=book_name;
+            this.full_book_view_book_id=bookId;
             try {
                 const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`, {
                     headers: {
@@ -215,12 +243,16 @@ export default {
 
 
         },
-        setmodalcontent(content) {
+        setmodalcontent(content,title,book_id) {
             this.modal_content = content;
+            this.modal_title = title;
+            this.modal_book_id = book_id;
         },
         async updatemodal(bookId) {
             await  this.get_full_book(bookId);
             console.log(this.full_book_modal_content);
+            this.modal_name = this.books.find(book => book.id === bookId).name;
+            this.modal_book_id=bookId;
             console.log ("bbbbbbbbbbbbbb")
             this.bookId = bookId;
             this.bookName = this.books.find(book => book.id === bookId).name;
@@ -232,7 +264,7 @@ export default {
             console.log(this.contentfull_book_modal_content,"aaaaaaaaaaaaa")
             const bookData = {
                 name: this.bookName,
-                full_content: this.contentfull_book_modal_content,
+                full_content: this.full_book_modal_content,
                 author: this.author,
                 image: this.image,
             };
