@@ -178,7 +178,7 @@ class BookRequest(db.Model):
 
     @validates('status')
     def validate_status(self, key, status):
-        if status not in ['requested', 'approved', 'rejected', 'revoke','returned']:
+        if status not in ['requested', 'approved', 'rejected', 'revoke','returned','access-revoked']:
             raise ValueError("Invalid status value")
         return status
     

@@ -298,7 +298,7 @@ def revoke_book():
 @auth_required("token")
 @roles_required("admin")
 def get_requests():
-    requests = BookRequest.query.all()
+    requests = BookRequest.query.all()[::-1]
     return jsonify([request.serialize() for request in requests])
 
 @app.route('/approve-request/<int:request_id>', methods=['PUT'])

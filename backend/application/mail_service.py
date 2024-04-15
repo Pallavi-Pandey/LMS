@@ -14,8 +14,8 @@ SENDER_EMAIL = 'pallavipandey181@gmail.com'
 SENDER_PASSWORD = os.getenv('APP_PASSWORD')
 
 def create_pdf(data, filename):
-    rendered_html = render_template('newpdf.html',email=data["email"], name=data['name'], 
-                           start_date=data['start_date'], end_date=data['end_date'])
+    rendered_html = render_template('newpdf.html',data=data)
+    print("indide create pdf",data)
 
     # Convert rendered HTML to PDF using WeasyPrint
     pdf_content = HTML(string=rendered_html).write_pdf()
@@ -27,7 +27,7 @@ def create_pdf(data, filename):
     # Create response
     response = make_response(pdf_content)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    response.headers['Content-Disposition'] = f'inline; filename={filename}.pdf'
 
     return response
 
@@ -75,4 +75,3 @@ def send_email_without_attachment(To, subject, message):
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.sendmail(sender, To, msg.as_string())
-        

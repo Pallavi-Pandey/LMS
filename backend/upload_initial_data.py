@@ -14,11 +14,6 @@ with app.app_context():
     if not datastore.find_user(email="admin@email.com"):
         datastore.create_user(
            name="admin", email="admin@email.com", password=generate_password_hash("admin"), roles=["admin"])
-    if not datastore.find_user(email="stud1@email.com"):
-        datastore.create_user(
-         name="stud1",    email="stud1@email.com", password=generate_password_hash("stud1"), roles=["stud"])
-    if not datastore.find_user(email="stud2@email.com"):
-        datastore.create_user(
-         name="stud2",    email="stud2@email.com", password=generate_password_hash("stud2"), roles=["stud"])
+   
 
     db.session.commit()
