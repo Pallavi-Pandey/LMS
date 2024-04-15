@@ -20,15 +20,8 @@ book_parser.add_argument('author_name')
 book_parser.add_argument('quantity')
 book_parser.add_argument('genre_id')
 
-cart_parser = reqparse.RequestParser()
-cart_parser.add_argument('user_id')
-cart_parser.add_argument('book_id')
-cart_parser.add_argument('quantity')
-cart_parser.add_argument('bought')
-cart_parser.add_argument('T_time')
 
-genre_parser = reqparse.RequestParser()
-genre_parser.add_argument('name')
+
 
 login_parser = reqparse.RequestParser()
 login_parser.add_argument('email')

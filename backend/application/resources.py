@@ -49,29 +49,3 @@ section_marshal={
     "books": fields.List(fields.Nested(book_marshal))
 }
 
-class StudyMaterial(Resource):
-    @auth_required("token")
-    @cache.cached(timeout=10)
-    def get(self):
-        if "inst" in current_user.roles:
-            study_resources = StudyResource.query.all()
-        else:
-            study_resources = StudyResource.query.filter(
-                or_(StudyResource.is_approved == True, StudyResource.creator == current_user)).all()
-        if len(study_resources) > 0:
-            return marshal(study_resources, study_material_fields)
-        else:
-            return {"message": "No Resourse Found"}, 404
-
-    @auth_required("token")
-    @roles_required("stud")
-    def post(self):
-        args = parser.parse_args()
-        study_resource = StudyResource(topic=args.get("topic"), description=args.get(
-            "description"), resource_link=args.get("resource_link"), creator_id=current_user.id)
-        db.session.add(study_resource)
-        db.session.commit()
-        return {"message": "Study Resource Created"}
-
-
-api.add_resource(StudyMaterial, '/study_material')

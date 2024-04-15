@@ -10,12 +10,21 @@ import flask_excel as excel
 from celery.result import AsyncResult
 
 from application.mail_service import send_email_attachment
+from application.tasks import create_resource_csv
 
 from .models import Book, Section, User, db,BookRequest,BookAccessHistory,BookRating
 from werkzeug.security import generate_password_hash
 from .resources import section_marshal,book_marshal
 from .instances import cache
 from .sec import datastore
+
+from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
+from weasyprint import HTML
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+import os
 
 
 @app.get('/')
@@ -357,27 +366,12 @@ def ala():
     return "aammmmss"
 
 
-from jinja2 import Template
-from jinja2 import Environment, FileSystemLoader
-from weasyprint import HTML
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
-import os
 
 
 
 
-@app.route("/pdfa")
-def aa():
-    # Render your HTML template
-    data={}
-    data["email"]="gokulakrishnanm1998@gmail.com"
-    data["name"]="Gokulakrishnan"
-    data["start_date"]="2024-02-06"
-    data["end_date"]="2024-05-06"
-    send_email_attachment(data["email"], 'Your PDF Attachment', 'Please find attached PDF', data)
-    return 'Email sent successfully!'
+
+
 
 @app.route("/full-book/<int:book_id>")
 @auth_required("token")
@@ -465,11 +459,3 @@ def user_monthly_activity():
                 
     return data
 
-@app.route('/asas')
-def asas():
-    users = user_monthly_activity()
-    
-    for user in users:
-        print(user)
-
-    return render_template('newpdf.html',data=users[3])
