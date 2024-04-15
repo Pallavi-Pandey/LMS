@@ -1,15 +1,15 @@
 <template>
   <div class="container-fluid bg-light p-3">
     <div class="row">
-    <div class="col-md-12 d-flex justify-content-between align-items-center">
+      <div class="col-md-12 d-flex justify-content-between align-items-center">
         <h1>Librarian Dashboard</h1>
         <div><button @click="downloadResource">Download CSV</button><span v-if="isWaiting"> Waiting... </span></div>
+      </div>
     </div>
-</div>
 
 
     <!-- Section Management -->
-    <div class="row">
+    <div class="row mb-3">
       <div class="col-md-12">
         <div class="card mt-4">
           <div class="card-header">
@@ -17,17 +17,23 @@
           </div>
           <div class="card-body">
             <ul>
-              <div v-for="section in sections" :key="section.id">
-                <router-link :to="`/section/${section.id}`" class="section">{{ section.name }} </router-link>
-                <span class="badge bg-secondary">{{ section.books.length }}</span>Books
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"   @click="updatemodal(section.id)" >
- Update
-</button>
-                <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
+              <div v-for="section in sections" :key="section.id" style="margin-bottom: 10px;">
+                <div class="d-flex justify-content-between align-items-center">
+                  <router-link :to="`/section/${section.id}`" class="section" style="font-size:x-large ;" >{{ section.name }}</router-link>
+                  <div>
+                    <span class="badge bg-secondary">{{ section.books.length }}</span>
+                    <span class="align-middle"> - Books</span>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                      @click="updatemodal(section.id)"  style="margin-right: 10px;">Update</button>
+                    <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
+                  </div>
+                </div>
               </div>
             </ul>
           </div>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSectionModal">
+          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSectionModal">
             Add Section
           </button>
         </div>
@@ -35,30 +41,30 @@
     </div>
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="sectionName" class="form-label">Section Name</label>
-            <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Update Section</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <button type="submit" class="btn btn-primary" @click="submit_section_update">Update Section</button>
-        </form>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="sectionName" class="form-label">Section Name</label>
+                <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
+              </div>
+              <button type="submit" class="btn btn-primary" @click="submit_section_update">Update Section</button>
+            </form>
 
 
-          
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
     <!-- Add Section Modal -->
     <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel"
@@ -79,7 +85,8 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-add-section">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+              id="close-add-section">Close</button>
           </div>
         </div>
       </div>
@@ -119,12 +126,12 @@ export default {
     };
   },
   methods: {
-  async  updatemodal(sectionId){
-    this.sectionName = this.sections.find(section => section.id === sectionId).name;
-    this.sectionId = sectionId;
+    async updatemodal(sectionId) {
+      this.sectionName = this.sections.find(section => section.id === sectionId).name;
+      this.sectionId = sectionId;
 
-  },
-  async downloadResource() {
+    },
+    async downloadResource() {
       this.isWaiting = true
       const res = await fetch('http://127.0.0.1:5000/download-csv')
       const data = await res.json()
@@ -142,8 +149,8 @@ export default {
       }
     },
 
-    
-    async submit_section_update(){
+
+    async submit_section_update() {
       const sectionData = {
         name: this.sectionName
       };
@@ -167,12 +174,12 @@ export default {
         this.sectionName = '';
         this.getSections();
 
-          
+
       } catch (error) {
         console.error('Error updating section:', error);
       }
     },
-    
+
     async addSection() {
       const sectionData = {
         name: this.sectionName
@@ -192,7 +199,7 @@ export default {
         }
         const data = await response.json();
         console.log('Section added successfully', data);
-        const btnn=document.getElementById('close-add-section');
+        const btnn = document.getElementById('close-add-section');
         console.log(btnn);
         btnn.click();
 
@@ -204,14 +211,15 @@ export default {
     },
     confirmDelete(sectionId) {
       this.sectionToDelete = sectionId;
-      if(confirm('Are you sure you want to delete this section?')){
+      if (confirm('Are you sure you want to delete this section?')) {
         this.deleteSection();
 
       }
 
     },
     async deleteSection() {
-      try {get_full_book
+      try {
+        get_full_book
         const response = await fetch(`http://127.0.0.1:5000/delete-section/${this.sectionToDelete}`, {
           method: 'DELETE',
           headers: {
@@ -262,9 +270,36 @@ export default {
 .card {
   margin-bottom: 20px;
 }
+
 /* change the color of buttons */
-.btn-primary {
-  background-color: rgb(29, 168, 168);
+.btn-success {
+  background-color: rgb(112, 68, 161);
   border-color: #08131f;
 }
+.btn-primary {
+  background-color: rgb(94, 29, 168);
+  border-color: #08131f;
+}
+.section-container {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .section-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .book-count {
+        margin-left: 10px;
+    }
+
+    .section-actions {
+        display: flex;
+        align-items: center;
+    }
 </style>

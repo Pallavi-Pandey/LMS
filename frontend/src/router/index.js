@@ -7,7 +7,9 @@ import HelloWorld from '@/components/HelloWorld.vue';
 import SingleSection from '@/components/SingleSection.vue';
 import RequestPage from '@/components/RequestPage.vue';
 import MyBooks from '@/components/MyBooks.vue';
-
+import BarChart from '@/components/MyStats.vue';
+// import UserStats from '@/components/UserStats.vue';
+// import BarChart from '@/components/BC.vue';
 const routes = [ 
     {path: '/login' , component: Login, name: 'Login'},
     {path: '/signup' , component: SignUp,name: 'Signup'},
@@ -17,6 +19,7 @@ const routes = [
     {path:"/section/:id", component: SingleSection},
     {path: '/requests' , component: RequestPage},
     {path: '/my-books' , component: MyBooks},
+    {path: '/mystats' , component: BarChart},
     // if user is logged in, redirect to user dashboard, else redirect to login page
     {
         path: '/',

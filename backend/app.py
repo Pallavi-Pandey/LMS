@@ -7,7 +7,7 @@ from application.sec import datastore
 from application.worker import celery_init_app
 import flask_excel as excel
 from celery.schedules import crontab
-from application.tasks import another_task, daily_reminder
+from application.tasks import another_task, daily_reminder, revoke_access
 from application.instances import cache
 from flask_cors import CORS
 

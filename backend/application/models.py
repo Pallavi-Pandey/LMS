@@ -14,13 +14,6 @@ class RolesUsers(db.Model):
     user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
     role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
-    # @validates('role_id')
-    # def validate_role_id(self, key, role_id):
-    #     if role_id == 1:
-    #         raise ValueError("Role id 1 is reserved for admin")
-    #     return role_id
-    
-    # add constraint that only one user can be admin
     @validates('user_id', 'role_id')
     def validate_user_role(self, key, value):
         if key == 'role_id':
@@ -40,16 +33,6 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     last_login_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary="role_users", backref=db.backref('users', lazy='dynamic'))
-
-    # to add a validation that only one user can be admin
-    @validates('roles')
-    def validate_roles(self, key, roles):
-        if len(roles) > 1:
-            raise ValueError("Only one role can be assigned to a user")
-        return roles
-    
-    
-
 
     def get_id(self):
         return str(self.id)

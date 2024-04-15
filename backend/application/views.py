@@ -100,7 +100,6 @@ def add_book():
     db.session.add(new_book)
 
     db.session.commit()
-    # remove cache
     cache.clear()
     return jsonify({'message': 'Book added successfully'}), 201
 
@@ -141,10 +140,12 @@ def update_book(id):
     if not book:
         return jsonify({'error': 'Book not found'}), 404
     book_data = request.json
+    print("book_data",book_data)
     if 'name' in book_data:
         book.name = book_data['name']
     if 'full_content' in book_data:
         book.full_content = book_data['full_content']
+        print("full_content",book_data['full_content'])
     if 'author' in book_data:
         book.author = book_data['author']
     if 'image' in book_data:
@@ -199,8 +200,6 @@ def get_sections():
                 book_data['requested_date'] = book.requested_date(current_user.id)
                 section_data['books'].append(book_data)
         serialized_sections.append(section_data)
-
-
     return jsonify(serialized_sections)
 
 
@@ -225,7 +224,6 @@ def update_section(id):
     if 'name' in section_data:
         section.name = section_data['name']
     db.session.commit()
-    # Clear the cache
     cache.clear()
     return jsonify({'message': 'Section updated successfully'})
 
@@ -265,6 +263,7 @@ def rent_book():
         db.session.commit()
     except ValueError as e:
         return jsonify({'message': str(e)}), 223
+    cache.clear()
     return jsonify({'message': 'Book renting requested successfully'}), 201
 
 @app.route('/books-rented')
@@ -273,6 +272,7 @@ def rent_book():
 def books_rented():
     # count of books rented by a user , status should be approved or requested
     books_rented = BookRequest.query.filter_by(user_id=current_user.id).filter(BookRequest.status.in_(['requested', 'approved'])).count()
+    cache.clear()
     return jsonify({'books_rented': books_rented})
 
 # return a book
@@ -330,6 +330,7 @@ def reject_request(request_id):
 @roles_required("stud")
 def my_books():
     books = BookRequest.query.filter_by(user_id=current_user.id).all()
+    cache.clear()
     return jsonify([book.serialize() for book in books])
 
 
@@ -383,7 +384,8 @@ def aa():
 def full_book(book_id):
     user=current_user
     print(user)
-    if not book_id in user.user_accessible_books:
+    print(user.email)
+    if not book_id in user.user_accessible_books and user.email!='admin@email.com':
         return jsonify({'error': 'Book not found'}), 404
     # validation to check if the book is accessible or not
     book = Book.query.get(book_id)
@@ -413,3 +415,25 @@ def revoke_request(book_id):
         return jsonify({'error': 'Book request not found'}), 404
     cache.clear()
     return jsonify({'message': 'Book renting revoked successfully'})
+
+
+
+@app.route('/get_barchart_data')
+@auth_required("token")
+@roles_required("admin")
+def get_barchart_data():
+    secion_names=[]
+    book_count=[]
+    sections = Section.query.all()
+    for section in sections:
+        secion_names.append(section.name)
+        book_count.append(len(section.books))
+    # {
+        #   labels: [ 'January', 'February', 'March' ],
+        #   datasets: [ { data: [400, 20, 12] } ]
+        # }
+    data={
+        "labels":secion_names,
+        "datasets":[{"data":book_count}]
+    }
+    return jsonify(data)

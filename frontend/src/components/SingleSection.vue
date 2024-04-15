@@ -1,44 +1,47 @@
 <template>
-    single section {{ sectionId }}
-    {{ section }}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 style="color: brown;">{{ section }}</h2>
+            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+                Add Book
+            </button>
+        </div>
 
-    <div v-if="section">
-        <h1>{{ section.name }}</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
-            add Book
-        </button>
-        <ul>
-            <div v-for="book in books" :key="book.id">
-                <div class="card" style="width: 18rem;">
-                    <img :src="book.image" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title
-                        ">{{ book.name }}</h5>
-                        <br>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#ViewBook" @click="setmodalcontent(book.content)">
-                        
-View Book    Sample                    </button>
-<button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#ViewFullBook" @click="get_full_book(book.id)">
-                        
-View Full Book                    </button>
-                        <br>
-                        <br>
-                        <p class="card-text">{{ book.author }}</p>
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal" @click="updatemodal(book.id)">
-                                Update
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="confirmDelete(book.id)">Delete</button>
+        <div v-if="section">
+            <h1>{{ section.name }}</h1>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                <div v-for="book in books" :key="book.id" class="col">
+                    <div class="card">
+                        <img :src="book.image" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.name }}</h5>
+                            <p class="card-text">{{ book.author }}</p>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#ViewBook" @click="setmodalcontent(book.content)">
+                                    View Book Sample
+                                </button>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal" @click="updatemodal(book.id)">
+                                    Update
+                                </button>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#ViewFullBook" @click="get_full_book(book.id)">
+                                    View Full Book
+                                </button>
 
+                                <button type="button" class="btn btn-danger" @click="confirmDelete(book.id)">
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <br>
             </div>
-        </ul>
+        </div>
     </div>
     <div class="modal fade" id="ViewBook" tabindex="-1" aria-labelledby="ViewBook" aria-hidden="true">
         <div class="modal-dialog">
@@ -91,7 +94,7 @@ View Full Book                    </button>
                         </div>
                         <div class="mb-3">
                             <label for="content" class="form-label">Content</label>
-                            <textarea class="form-control" id="content" v-model.trim="content" required></textarea>
+                            <textarea class="form-control" id="content" v-model.trim="full_book_modal_content" required></textarea>
                         </div>
                         <!-- image link -->
                         <div class="mb-3">
@@ -99,7 +102,7 @@ View Full Book                    </button>
                             <input type="text" class="form-control" id="image" v-model.trim="image" required>
                         </div>
                         <button type="submit" class="btn btn-primary" @click="submit_book_update">Update
-                            Section</button>
+                            Book</button>
                     </form>
 
 
@@ -116,7 +119,7 @@ View Full Book                    </button>
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="addBookModalLabel">add Book</h1>
+                    <h1 class="modal-title fs-5" id="addBookModalLabel">Add Book</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -138,7 +141,7 @@ View Full Book                    </button>
                             <label for="image" class="form-label">Image</label>
                             <input type="text" class="form-control" id="image" v-model.trim="image" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">add Book</button>
+                        <button type="submit" class="btn btn-primary">Add Book</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -192,7 +195,7 @@ export default {
         async get_full_book(bookId) {
             // fetch book content
             try {
-                const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`,{
+                const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
@@ -210,25 +213,30 @@ export default {
                 console.error('Error fetching book:', error);
             }
 
-                
+
         },
         setmodalcontent(content) {
-           this.modal_content = content;
+            this.modal_content = content;
         },
-        updatemodal(bookId) {
+        async updatemodal(bookId) {
+            await  this.get_full_book(bookId);
+            console.log(this.full_book_modal_content);
+            console.log ("bbbbbbbbbbbbbb")
             this.bookId = bookId;
             this.bookName = this.books.find(book => book.id === bookId).name;
-            this.content = this.books.find(book => book.id === bookId).content;
+            this.contentfull_book_modal_content = this.books.find(book => book.id === bookId).full_book_modal_content;
             this.author = this.books.find(book => book.id === bookId).author;
             this.image = this.books.find(book => book.id === bookId).image;
         },
         async submit_book_update() {
+            console.log(this.contentfull_book_modal_content,"aaaaaaaaaaaaa")
             const bookData = {
                 name: this.bookName,
-                content: this.content,
+                full_content: this.contentfull_book_modal_content,
                 author: this.author,
                 image: this.image,
             };
+            console.log(bookData);
             try {
                 const response = await fetch('http://127.0.0.1:5000/book/' + this.bookId, {
                     method: 'PUT',
@@ -243,7 +251,7 @@ export default {
                     throw new Error('Unable to update book');
                 }
                 const data = await response.json();
-                console.log('Book updated successfully', data);
+                console.log('Book updated succeUpdatessfully', data);
                 $('#exampleModal').modal('hide');
                 this.bookName = '';
                 this.content = '';
@@ -342,19 +350,43 @@ export default {
                 // click on close button
                 const closebtn = document.getElementById('closebookmodal');
                 closebtn.click();
-
-
             } catch (error) {
                 console.error('Error adding section:', error);
             }
         },
-
-
-
-
-
-
     }
 };
-
 </script>
+<style>
+.container {
+    padding: 20px;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+.btn-primary {
+    width: 49%; 
+    background-color: rgb(94, 29, 168);
+  border-color: #08131f;
+}
+.btn-secondary {
+    background-color: rgb(29, 124, 168);
+  border-color: #08131f;
+}
+.btn-success {
+    background-color: rgb(8, 122, 122);
+  border-color: #08131f;
+}
+.section-border {
+    border: 2px solid brown;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+</style>

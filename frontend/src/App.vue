@@ -27,5 +27,5 @@ export default {
   mounted() {
     this.isNavbarLoaded = true;
   }
-};
+}
 </script>
