@@ -1,7 +1,8 @@
 import datetime
 from celery import shared_task
 import flask_excel as excel
-from .mail_service import send_email_attachment
+
+from .mail_service import send_email_attachment, send_email_without_attachment
 from .models import BookRequest, User, Role,db
 from jinja2 import Template
 from celery import shared_task
@@ -55,3 +56,23 @@ def revoke_access():
     db.session.commit()
     return "OK"
 
+
+
+@shared_task(ignore_result=True)
+def send_remainder():
+    # daily remainder
+    users = User.query.filter(User.roles.any(Role.name == 'stud')).all()
+    for user in users:
+        # check if user logged in today
+        if user.last_login_at.date() != datetime.datetime.now().date():
+            send_email_without_attachment(user.email, 'Reminder','Remainder to visit Pallavi LMS')
+    return "OK"
+
+@shared_task(ignore_result=True)
+def monthly_report():
+    users = User.query.all()
+    for user in users:
+        data={"user_name": user.name, "email": user.email, "data":user.monthly_report}
+        send_email_attachment(user.email, 'Monthly Report','Please find attached PDF', data)
+                
+    

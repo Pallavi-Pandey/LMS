@@ -7,7 +7,7 @@ from application.sec import datastore
 from application.worker import celery_init_app
 import flask_excel as excel
 from celery.schedules import crontab
-from application.tasks import another_task, daily_reminder, revoke_access
+from application.tasks import another_task, daily_reminder, monthly_report, revoke_access, send_remainder
 from application.instances import cache
 from flask_cors import CORS
 
@@ -36,13 +36,28 @@ def send_email(sender, **kwargs):
     sender.add_periodic_task(
         # crontab(hour=16, minute=55, day_of_month=20),
         # for every 10 seconds
-        crontab(minute="*/1"),
+        crontab(minute="*/10"),
         daily_reminder.s('21f3003053@ds.study.iitm.ac.in',"aaaaaa"),
     )
     sender.add_periodic_task(
         # every hour
         crontab(minute=0, hour="*/1"),
         revoke_access.s(),  # Task to be executed
+    )
+
+    sender.add_periodic_task(
+        # everyday at 5 pm
+        crontab(minute=0, hour=17),
+        send_remainder.s()
+
+    )
+
+    sender.add_periodic_task(
+        # monthly report
+        # crontab(minute=0, hour=0, day=1),
+        crontab(minute="*/1"),
+        monthly_report.s(),
+
     )
 
 

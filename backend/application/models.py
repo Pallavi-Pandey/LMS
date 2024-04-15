@@ -1,4 +1,5 @@
 from datetime import timedelta
+import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
@@ -56,6 +57,26 @@ class User(db.Model, UserMixin):
         for book_request in BookRequest.query.filter_by(user_id=self.id).all():
             accessible_books.append(book_request.book_id)
         return accessible_books
+    
+    @property
+    def monthly_report(self):
+        # books activity this month
+        books= BookRequest.query.filter_by(user_id=self.id).filter(BookRequest.requested_date > datetime.datetime.now() - timedelta(days=30)).all()
+        data=[]
+        # book={book_id, book_title, author, section_name, requested_date, status}
+        for book in books:
+            data.append({
+                'book_id': book.book_id,
+                'book_title': book.book_title,
+                'author': book.author_name,
+                'section_name': book.section_name,
+                'requested_date': book.requested_date,
+                'status': book.status
+            })  
+        return data
+
+    
+    
         
 class Role(db.Model, RoleMixin):
     __tablename__ = 'role'
@@ -157,7 +178,7 @@ class BookRequest(db.Model):
 
     @validates('status')
     def validate_status(self, key, status):
-        if status not in ['requested', 'approved', 'rejected', 'revoke']:
+        if status not in ['requested', 'approved', 'rejected', 'revoke','returned']:
             raise ValueError("Invalid status value")
         return status
     

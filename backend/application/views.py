@@ -10,7 +10,7 @@ import flask_excel as excel
 from celery.result import AsyncResult
 
 from application.mail_service import send_email_attachment
-from .tasks import create_resource_csv
+
 from .models import Book, Section, User, db,BookRequest,BookAccessHistory,BookRating
 from werkzeug.security import generate_password_hash
 from .resources import section_marshal,book_marshal
@@ -437,3 +437,39 @@ def get_barchart_data():
         "datasets":[{"data":book_count}]
     }
     return jsonify(data)
+
+@app.route("/add-feedback",methods=["POST"])
+@auth_required("token")
+def add_feedback():
+    data = request.json
+    book_id = data.get('book_id')
+    rating = data.get('rating')
+    feedback=data.get('feedback')
+    user_id = current_user.id
+    book_rating = BookRating.query.filter_by(book_id=book_id, user_id=user_id).first()
+    if not book_rating:
+        book_rating = BookRating(book_id=book_id, user_id=user_id, rating=rating, feedback=feedback)
+        db.session.add(book_rating)
+    else:
+        book_rating.rating = rating
+    db.session.commit()
+    cache.clear()
+    return jsonify({'message': 'Rating added successfully'}), 201
+
+@app.route('/user_monthly_activity')
+def user_monthly_activity():
+    users = User.query.all()
+    data = []
+    for user in users:
+        data.append({"user_name": user.name, "email": user.email, "data":user.monthly_report})
+                
+    return data
+
+@app.route('/asas')
+def asas():
+    users = user_monthly_activity()
+    
+    for user in users:
+        print(user)
+
+    return render_template('newpdf.html',data=users[3])

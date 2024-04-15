@@ -31,9 +31,11 @@ def create_pdf(data, filename):
 
     return response
 
+
+
 def send_email_attachment(To, subject, message, data):
     msg = MIMEMultipart()
-    sender = 'iammaitreyee1@gmail.com'
+    sender = SENDER_EMAIL
     msg['From'] = sender
     msg['To'] = To
     msg['Subject'] = subject
@@ -48,11 +50,29 @@ def send_email_attachment(To, subject, message, data):
         msg.attach(attachment)
     smtp_server = 'smtp.gmail.com'
     smtp_port = 587
-    smtp_username = 'iammaitreyee1@gmail.com'
-    smtp_password = 'oyxdqxguccbiubuz'
+    smtp_username = SENDER_EMAIL
+    smtp_password = SENDER_PASSWORD
 
     with smtplib.SMTP(smtp_server, smtp_port) as server:
         server.starttls()
         server.login(smtp_username, smtp_password)
         server.sendmail(sender, To, msg.as_string())
 
+
+def send_email_without_attachment(To, subject, message):
+    msg = MIMEMultipart()
+    sender = SENDER_EMAIL
+    msg['From'] = sender
+    msg['To'] = To
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message))
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587
+    smtp_username = SENDER_EMAIL
+    smtp_password = SENDER_PASSWORD
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.sendmail(sender, To, msg.as_string())
+        
