@@ -245,6 +245,7 @@ def delete_section(id):
     if section:
         section.is_deleted = True
         db.session.commit()
+        cache.clear()
         return jsonify({'message': 'Section deleted successfully'})
     cache.clear()
     return jsonify({'error': 'Section not found'}), 404

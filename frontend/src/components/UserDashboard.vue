@@ -306,7 +306,7 @@ export default {
       if (!confirm('Taking you to payment gateway, do you want to continue?')) {
         return;
       }
-      if (!confirm('pay 1000 to rent the book?')) {
+      if (!confirm('pay 100 to rent the book?')) {
         return;
       }
 

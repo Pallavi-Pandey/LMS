@@ -111,7 +111,7 @@ class Book(db.Model):
 
     @property
     def content(self):
-        return self.full_content[:1000]
+        return self.full_content[:500]
 
     def serialize(self):
         return {

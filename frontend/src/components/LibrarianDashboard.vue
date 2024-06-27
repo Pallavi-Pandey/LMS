@@ -219,7 +219,7 @@ export default {
     },
     async deleteSection() {
       try {
-        get_full_book
+        //get_full_book
         const response = await fetch(`http://127.0.0.1:5000/delete-section/${this.sectionToDelete}`, {
           method: 'DELETE',
           headers: {

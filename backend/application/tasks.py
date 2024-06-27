@@ -7,6 +7,7 @@ from .models import BookRequest, User, Role,db
 from jinja2 import Template
 from celery import shared_task
 
+# task to create a csv file of all users in the system and return the file name
 @shared_task(ignore_result=False)
 def create_resource_csv():
     import time
@@ -25,20 +26,18 @@ def create_resource_csv():
 
     return filename
 
-
+# task to send a daily reminder to admin 
 @shared_task(ignore_result=True)
 def daily_reminder(to, subject):
     users = User.query.filter(User.roles.any(Role.name == 'admin')).all()
     data={}
     data["email"]=to
-    data["name"]="Gokulakrishnan"
+    data["name"]="Pallavi"
     data["start_date"]="2024-02-06"
     data["end_date"]="2024-05-06"
     for user in users:
             send_email_attachment(to, subject,'Please find attached PDF', data) 
     return "OK"
-
-
 
 @shared_task(ignore_result=True)
 def another_task():
@@ -46,7 +45,7 @@ def another_task():
     print("This task runs every 10 seconds")
     return "OK"
 
-
+# task to revoke access to a book if it has been requested for more than 7 days
 @shared_task(ignore_result=True)
 def revoke_access():
     requests=BookRequest.query.filter_by(status='approved').all()
@@ -56,8 +55,7 @@ def revoke_access():
     db.session.commit()
     return "OK"
 
-
-
+# task to send a reminder to all students who have not logged in today
 @shared_task(ignore_result=True)
 def send_remainder():
     # daily remainder
@@ -68,6 +66,7 @@ def send_remainder():
             send_email_without_attachment(user.email, 'Reminder','Remainder to visit Pallavi LMS')
     return "OK"
 
+# task to send a monthly report to all users
 @shared_task(ignore_result=True)
 def monthly_report():
     users = User.query.all()
