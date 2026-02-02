@@ -1,182 +1,178 @@
 <template>
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 style="color: brown;">{{ section }}</h2>
-            <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addBookModal">
-                Add Book
-            </button>
+  <div class="dashboard-container">
+    <div class="glass-panel p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light pb-3">
+        <div>
+           <button class="btn btn-sm btn-light text-primary mb-2 rounded-pill px-3 shadow-sm" @click="$router.push('/librarian-dashboard')">
+              <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+          </button>
+          <h2 class="text-primary fw-bold m-0" v-if="section">{{ section }}</h2>
         </div>
+       
+        <button type="button" class="btn btn-premium rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#addBookModal">
+          <i class="bi bi-plus-lg me-2"></i>Add New Book
+        </button>
+      </div>
 
-        <div v-if="section">
-            <h1>{{ section.name }}</h1>
-            <div class="row row-cols-1 row-cols-md-3 g-3">
-                <div v-for="book in books" :key="book.id" class="col">
-                    <div class="card">
-                        <img :src="book.image" class="card-img-top" alt="...">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ book.name }}</h5>
-                            <p class="card-text">{{ book.author }}</p>
-                            <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#ViewBook" @click="setmodalcontent(book.content,book.name,book.id)">
-                                    View Book Sample
-                                </button>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#exampleModal" @click="updatemodal(book.id)">
-                                    Update
-                                </button>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#ViewFullBook" @click="get_full_book(book.id,book.name)">
-                                    View Full Book
-                                </button>
-
-                                <button type="button" class="btn btn-danger" @click="confirmDelete(book.id)">
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+      <div v-if="section">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+          <div v-for="book in books" :key="book.id" class="col">
+            <div class="card h-100 border-0 shadow-sm card-hover glass-card book-card">
+              <div class="card-img-wrapper position-relative" style="height: 200px; overflow: hidden;">
+                <img :src="book.image || 'https://via.placeholder.com/300x400?text=No+Cover'" class="card-img-top w-100 h-100 object-fit-cover" alt="Book Cover" @error="$event.target.src='https://via.placeholder.com/300x400?text=No+Cover'">
+                <div class="card-overlay">
+                    <button type="button" class="btn btn-light btn-sm rounded-pill px-3 mb-2" data-bs-toggle="modal"
+                      data-bs-target="#ViewBook" @click="setmodalcontent(book.content,book.name,book.id)">
+                      <i class="bi bi-eye me-1"></i> Preview
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                      data-bs-target="#ViewFullBook" @click="get_full_book(book.id,book.name)">
+                      <i class="bi bi-book me-1"></i> Read Full
+                    </button>
                 </div>
+              </div>
+
+              <div class="card-body d-flex flex-column p-3">
+                <h5 class="card-title fw-bold text-truncate mb-1" :title="book.name">{{ book.name }}</h5>
+                <h6 class="card-subtitle mb-3 text-muted small">{{ book.author }}</h6>
+                
+                <div class="mt-auto d-grid gap-2">
+                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal" @click="updatemodal(book.id)">
+                    Edit Details
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill" @click="confirmDelete(book.id)">
+                    Remove
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
+      <div v-else class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
     </div>
-    <div class="modal fade" id="ViewBook" tabindex="-1" aria-labelledby="ViewBook" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel"> {{ modal_title }}</h1>
+
+    <!-- Modals (with glass styling) -->
+    <!-- View Sample Modal -->
+    <div class="modal fade glass-modal" id="ViewBook" tabindex="-1" aria-labelledby="ViewBook" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content glass-panel border-0">
+                <div class="modal-header border-bottom-0">
+                    <h1 class="modal-title fs-5 fw-bold text-primary">Sample: {{ modal_title }}</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4 bg-white rounded mx-3 mb-3 shadow-sm">
                     {{ modal_content }}
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="ViewFullBook" tabindex="-1" aria-labelledby="ViewFullBook" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header" style="align-items: center;justify-content: space-between;">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Book Name: {{ full_book_view_book_name }}</h1>
-                    <!-- download  book-->
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
-                    <button type="button" class="btn btn-primary" @click="download_book_as_pdf(full_book_modal_content,full_book_view_book_name)">Download {{ full_book_view_book_name }}</button>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+    <!-- View Full Book Modal -->
+    <div class="modal fade glass-modal" id="ViewFullBook" tabindex="-1" aria-labelledby="ViewFullBook" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content glass-panel border-0">
+                <div class="modal-header border-bottom-0">
+                    <h1 class="modal-title fs-5 fw-bold text-primary">{{ full_book_view_book_name }}</h1>
+                    <div class="ms-auto d-flex gap-2 align-items-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" @click="download_book_as_pdf(full_book_modal_content,full_book_view_book_name)">
+                            <i class="bi bi-download me-1"></i> Download
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4 bg-white rounded mx-3 mb-3 shadow-sm">
                     {{ full_book_modal_content }}
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+
+    <!-- Update Book Modal -->
+    <div class="modal fade glass-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel border-0">
+                <div class="modal-header border-bottom-0">
+                    <h1 class="modal-title fs-5 fw-bold text-primary">Edit Book</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form @submit.prevent="submit_book_update">
                         <div class="mb-3">
-                            <label for="bookName" class="form-label">Book Name</label>
-                            <input type="text" class="form-control" id="bookName" v-model.trim="bookName" required>
+                            <label class="form-label">Book Name</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="bookName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="author" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="author" v-model.trim="author" required>
+                            <label class="form-label">Author</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="author" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Full Content</label>
-                            <textarea class="form-control" id="content" v-model.trim="full_book_modal_content" required></textarea>
+                            <label class="form-label">Full Content</label>
+                            <textarea class="form-control custom-input" v-model.trim="full_book_modal_content" rows="4" required></textarea>
                         </div>
-                        <!-- image link -->
                         <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="text" class="form-control" id="image" v-model.trim="image" required>
+                            <label class="form-label">Cover Image URL</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="image" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" @click="submit_book_update">Update
-                            Book</button>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-premium rounded-pill">Update Book</button>
+                        </div>
                     </form>
-
-
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- add Book Modal -->
-    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="addBookModalLabel">Add Book</h1>
+
+    <!-- Add Book Modal -->
+    <div class="modal fade glass-modal" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel border-0">
+                <div class="modal-header border-bottom-0">
+                    <h1 class="modal-title fs-5 fw-bold text-primary">Add New Book</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="addBook">
                         <div class="mb-3">
-                            <label for="bookName" class="form-label">Book Name</label>
-                            <input type="text" class="form-control" id="bookName" v-model.trim="bookName" required>
+                            <label class="form-label">Book Name</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="bookName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="author" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="author" v-model.trim="author" required>
+                            <label class="form-label">Author</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="author" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Content</label>
-                            <textarea class="form-control" id="content" v-model.trim="content" required></textarea>
+                            <label class="form-label">Full Content</label>
+                            <textarea class="form-control custom-input" v-model.trim="content" rows="4" required></textarea>
                         </div>
-                        <!-- image link -->
                         <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="text" class="form-control" id="image" v-model.trim="image" required>
+                            <label class="form-label">Cover Image URL</label>
+                            <input type="text" class="form-control custom-input" v-model.trim="image" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Book</button>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-premium rounded-pill">Add Book</button>
+                        </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="closebookmodal">Close</button>
-                </div>
+                 <!-- Logic button -->
+                 <button type="button" class="d-none" data-bs-dismiss="modal" id="closebookmodal"></button>
             </div>
         </div>
     </div>
-    <!-- add book delete modal -->
-    <div class="modal fade" id="deleteBookModal" tabindex="-1" aria-labelledby="deleteBookModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this book?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+  </div>
 </template>
 
 <script>
+// Logic remains mostly the same, ensuring API_BASE_URL is imported and used
 import API_BASE_URL from "../config";
-// to get section if from url
 import jsPDF from 'jspdf';
 
 export default {
@@ -184,7 +180,7 @@ export default {
     data() {
         return {
             sectionId: this.$route.params.id,
-            section: {},
+            section: null, // Init as null to show loader
             books: [],
             bookName: '',
             content: '',
@@ -196,6 +192,9 @@ export default {
             full_book_view_book_name:"",
             full_book_view_book_id:"",
             full_book_modal_content: '',
+            bookToDelete: null,
+            bookId: null,
+            contentfull_book_modal_content: '' // This variable name in original was weird but keeping logic consistent
 
         };
     },
@@ -204,20 +203,20 @@ export default {
     },
     methods: {
         download_book_as_pdf(content,bookname) {
-    console.log(content);
-    var pdf = new jsPDF();
-    var textLines = pdf.splitTextToSize(content, pdf.internal.pageSize.width - 20); // Adjust width as needed
-    var y = 10;
-    for (var i = 0; i < textLines.length; i++) {
-        if (y + 10 > pdf.internal.pageSize.height) { // Check if new page needed
-            pdf.addPage();
-            y = 10;
-        }
-        pdf.text(10, y, textLines[i]);
-        y += 10;
-    }
-    pdf.save(bookname+".pdf");
-},
+            console.log(content);
+            var pdf = new jsPDF();
+            var textLines = pdf.splitTextToSize(content, pdf.internal.pageSize.width - 20); // Adjust width as needed
+            var y = 10;
+            for (var i = 0; i < textLines.length; i++) {
+                if (y + 10 > pdf.internal.pageSize.height) { // Check if new page needed
+                    pdf.addPage();
+                    y = 10;
+                }
+                pdf.text(10, y, textLines[i]);
+                y += 10;
+            }
+            pdf.save(bookname+".pdf");
+        },
         
         async get_full_book(bookId,book_name) {
             // fetch book content
@@ -257,15 +256,18 @@ export default {
             console.log ("bbbbbbbbbbbbbb")
             this.bookId = bookId;
             this.bookName = this.books.find(book => book.id === bookId).name;
-            this.contentfull_book_modal_content = this.books.find(book => book.id === bookId).full_book_modal_content;
+            // Original code had this check/assignment potentially buggy or redundant, ensuring consistency
+            this.full_book_modal_content = this.books.find(book => book.id === bookId).full_book_modal_content || this.full_book_modal_content; 
+            
             this.author = this.books.find(book => book.id === bookId).author;
             this.image = this.books.find(book => book.id === bookId).image;
         },
         async submit_book_update() {
-            console.log(this.contentfull_book_modal_content,"aaaaaaaaaaaaa")
+           
             const bookData = {
                 name: this.bookName,
-                full_content: this.full_book_modal_content,
+                // Using full_book_modal_content as it is bound to the textarea in update modal
+                full_content: this.full_book_modal_content, 
                 author: this.author,
                 image: this.image,
             };
@@ -324,10 +326,6 @@ export default {
             }
         },
 
-
-
-
-
         async fetchSection() {
             try {
                 // Fetch section and books data from the backend API
@@ -372,17 +370,14 @@ export default {
                 }
                 const data = await response.json();
                 console.log('Section added successfully', data);
-                // to hide the modal
-                // to reload the page
+
                 this.bookName = '';
                 this.content = '';
                 this.author = '';
                 this.image = '';
                 this.fetchSection();
-                // to close the modal
-                // click on close button
                 const closebtn = document.getElementById('closebookmodal');
-                closebtn.click();
+                if(closebtn) closebtn.click();
             } catch (error) {
                 console.error('Error adding section:', error);
             }
@@ -390,36 +385,69 @@ export default {
     }
 };
 </script>
-<style>
-.container {
-    padding: 20px;
+
+<style scoped>
+.dashboard-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-gradient);
+}
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.card {
-    margin-bottom: 20px;
+.book-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
 }
 
-.card-img-top {
+.book-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-img-wrapper:hover .card-overlay {
+    opacity: 1;
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 200px;
-    object-fit: cover;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
-.btn-primary {
-    width: 49%; 
-    background-color: rgb(94, 29, 168);
-  border-color: #08131f;
+
+/* Modal Styling */
+.glass-modal .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
-.btn-secondary {
-    background-color: rgb(29, 124, 168);
-  border-color: #08131f;
+
+.custom-input {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
 }
-.btn-success {
-    background-color: rgb(8, 122, 122);
-  border-color: #08131f;
-}
-.section-border {
-    border: 2px solid brown;
-    padding: 10px;
-    margin-bottom: 20px;
+
+.custom-input:focus {
+  background: #fff;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 </style>

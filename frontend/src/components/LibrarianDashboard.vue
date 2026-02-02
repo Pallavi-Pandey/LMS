@@ -1,113 +1,100 @@
 <template>
-  <div class="container-fluid bg-light p-3">
-    <div class="row">
-      <div class="col-md-12 d-flex justify-content-between align-items-center">
-        <h1>Librarian Dashboard</h1>
-        <div><button @click="downloadResource">Download CSV</button><span v-if="isWaiting"> Waiting... </span></div>
+  <div class="dashboard-container">
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
+        <h1 class="display-5 fw-bold text-white mb-0">Librarian Dashboard</h1>
+        <p class="text-white-50 mt-2">Manage sections, books, and requests</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <button @click="downloadResource" class="btn btn-light shadow-sm text-primary fw-bold px-4 rounded-pill" :disabled="isWaiting">
+          <i class="bi bi-cloud-arrow-down me-2"></i>
+          {{ isWaiting ? 'Generating Report...' : 'Download Report CSV' }}
+        </button>
       </div>
     </div>
-
 
     <!-- Section Management -->
-    <div class="row mb-3">
-      <div class="col-md-12">
-        <div class="card mt-4">
-          <div class="card-header">
-            <h3>Section Management</h3>
-          </div>
-          <div class="card-body">
-            <ul>
-              <div v-for="section in sections" :key="section.id" style="margin-bottom: 10px;">
-                <div class="d-flex justify-content-between align-items-center">
-                  <router-link :to="`/section/${section.id}`" class="section" style="font-size:x-large ;" >{{ section.name }}</router-link>
-                  <div>
-                    <span class="badge bg-secondary">{{ section.books.length }}</span>
-                    <span class="align-middle"> - Books</span>
-                  </div>
-                  <div>
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal"
-                      @click="updatemodal(section.id)"  style="margin-right: 10px;">Update</button>
-                    <button type="button" class="btn btn-danger" @click="confirmDelete(section.id)">Delete</button>
-                  </div>
-                </div>
-              </div>
-            </ul>
-          </div>
-          <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSectionModal">
-            Add Section
-          </button>
+    <div class="glass-panel p-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light pb-3">
+            <h3 class="m-0 text-primary fw-bold">Section Management</h3>
+            <button type="button" class="btn btn-premium rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addSectionModal">
+                <i class="bi bi-plus-lg me-2"></i>Add New Section
+            </button>
         </div>
-      </div>
+
+        <div class="row row-cols-1 row-cols-lg-2 g-4">
+            <div v-for="section in sections" :key="section.id" class="col">
+                <div class="section-card glass-card h-100 p-3 d-flex flex-column justify-content-between position-relative overflow-hidden">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <router-link :to="`/section/${section.id}`" class="text-decoration-none">
+                            <h4 class="fw-bold text-dark m-0 section-link">{{ section.name }}</h4>
+                        </router-link>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                            {{ section.books.length }} Books
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-auto">
+                        <button class="btn btn-sm btn-outline-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                            @click="updatemodal(section.id)">
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger flex-grow-1" @click="confirmDelete(section.id)">
+                            Delete
+                        </button>
+                    </div>
+                    
+                    <!-- Decorative Circle -->
+                    <div class="decorative-circle"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Update Section</h1>
+    <!-- Update Section Modal -->
+    <div class="modal fade glass-modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel border-0">
+          <div class="modal-header border-bottom-0">
+            <h1 class="modal-title fs-5 fw-bold text-primary" id="exampleModalLabel">Update Section</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form>
+            <form @submit.prevent="submit_section_update">
               <div class="mb-3">
-                <label for="sectionName" class="form-label">Section Name</label>
-                <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
+                <label for="updateSectionName" class="form-label">Section Name</label>
+                <input type="text" class="form-control custom-input" id="updateSectionName" v-model.trim="sectionName" required>
               </div>
-              <button type="submit" class="btn btn-primary" @click="submit_section_update">Update Section</button>
+              <div class="d-grid">
+                  <button type="submit" class="btn btn-premium">Save Changes</button>
+              </div>
             </form>
-
-
-
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add Section Modal -->
-    <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="addSectionModalLabel">Add Section</h1>
+    <div class="modal fade glass-modal" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel border-0">
+          <div class="modal-header border-bottom-0">
+            <h1 class="modal-title fs-5 fw-bold text-primary" id="addSectionModalLabel">Add New Section</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="addSection">
               <div class="mb-3">
-                <label for="sectionName" class="form-label">Section Name</label>
-                <input type="text" class="form-control" id="sectionName" v-model.trim="sectionName" required>
+                <label for="newSectionName" class="form-label">Section Name</label>
+                <input type="text" class="form-control custom-input" id="newSectionName" v-model.trim="sectionName" placeholder="e.g., Science Fiction" required>
               </div>
-              <button type="submit" class="btn btn-primary">Add Section</button>
+              <div class="d-grid">
+                  <button type="submit" class="btn btn-premium">Create Section</button>
+              </div>
             </form>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-              id="close-add-section">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Section Confirmation Modal -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="confirmDeleteModalLabel">Confirm Delete</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Are you sure you want to delete this section?</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" @click="deleteSection">Yes, Delete</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          </div>
+          <!-- Hidden Button specific for logic (if needed) or remove if logic changed to standard modal hiding -->
+           <button type="button" class="d-none" data-bs-dismiss="modal" id="close-add-section"></button>
         </div>
       </div>
     </div>
@@ -115,9 +102,10 @@
 </template>
 
 <script>
+// Keep existing script logic, just update styling
 import API_BASE_URL from "../config";
 export default {
-  data() {
+    data() {
     return {
       sectionName: '',
       sections: [],
@@ -171,7 +159,7 @@ export default {
         }
         const data = await response.json();
         console.log('Section updated successfully', data);
-        $('#exampleModal').modal('hide');
+        $('#exampleModal').modal('hide'); // Requires jQuery or bootstrap instance in scope
         this.sectionName = '';
         this.getSections();
 
@@ -201,8 +189,7 @@ export default {
         const data = await response.json();
         console.log('Section added successfully', data);
         const btnn = document.getElementById('close-add-section');
-        console.log(btnn);
-        btnn.click();
+        if(btnn) btnn.click();
 
         this.sectionName = '';
         this.getSections();
@@ -260,47 +247,70 @@ export default {
     }
   },
   async mounted() {
-    // Fetch sections when the component is mounted
     this.getSections();
   }
 };
 </script>
 
 <style scoped>
-/* Add scoped styles for the librarian dashboard */
-.card {
-  margin-bottom: 20px;
+.dashboard-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-gradient);
 }
 
-/* change the color of buttons */
-.btn-success {
-  background-color: rgb(112, 68, 161);
-  border-color: #08131f;
+/* Glass Card for Sections */
+.section-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
-.btn-primary {
-  background-color: rgb(94, 29, 168);
-  border-color: #08131f;
+
+.section-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
-.section-container {
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        padding: 10px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-    }
 
-    .section-info {
-        display: flex;
-        align-items: center;
-    }
+.section-link {
+    transition: color 0.2s;
+}
 
-    .book-count {
-        margin-left: 10px;
-    }
+.section-link:hover {
+    color: #4f46e5 !important;
+}
 
-    .section-actions {
-        display: flex;
-        align-items: center;
-    }
+/* Decorative Circle */
+.decorative-circle {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(147, 51, 234, 0.1));
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Modal Styling */
+.glass-modal .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.custom-input {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.custom-input:focus {
+  background: #fff;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
 </style>
