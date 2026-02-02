@@ -1,0 +1,51 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: lms-redis
+    # ports:
+    #   - "6379:6379"
+
+  web-backend:
+    build: ./backend
+    container_name: lms-backend
+    volumes:
+      - ./backend:/app
+      - lms-db:/app/instance
+    environment:
+      - CACHE_REDIS_HOST=redis
+      - CACHE_REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+
+  celery-worker:
+    build: ./backend
+    container_name: lms-celery
+    command: celery -A app.celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - lms-db:/app/instance
+    environment:
+      - CACHE_REDIS_HOST=redis
+      - CACHE_REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - web-backend
+
+  frontend:
+    build: ./frontend
+    container_name: lms-frontend
+    ports:
+      - "5174:80"
+    depends_on:
+      - web-backend
+
+volumes:
+  lms-db:
