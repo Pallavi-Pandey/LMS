@@ -134,6 +134,32 @@ with app.app_context():
                 "description": "A series of personal writings by Marcus Aurelius recording his private notes to himself.",
                 "image": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Marc_Aur%C3%A8le_-_Pens%C3%A9es_pour_moi-m%C3%AAme_-_Manuscrit_Vaticanus_Graecus_1950.jpg"
             }
+        ],
+        "Horror": [
+            {
+                "name": "It",
+                "author": "Stephen King",
+                "description": "The story follows the experiences of seven children as they are terrorized by an evil entity.",
+                "image": "https://upload.wikimedia.org/wikipedia/en/5/5a/It_cover.jpg"
+            },
+            {
+                "name": "Dracula",
+                "author": "Bram Stoker",
+                "description": "The novel tells the story of Dracula's attempt to move from Transylvania to England.",
+                "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Dracula_1st_ed_cover_repro.jpg/330px-Dracula_1st_ed_cover_repro.jpg"
+            },
+            {
+                "name": "Frankenstein",
+                "author": "Mary Shelley",
+                "description": "The story of Victor Frankenstein, a young scientist who creates a sapient creature in an unorthodox scientific experiment.",
+                "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Frankenstein_1818_edition_title_page.jpg/330px-Frankenstein_1818_edition_title_page.jpg"
+            },
+             {
+                "name": "The Shining",
+                "author": "Stephen King",
+                "description": "The story centers on the life of Jack Torrance, an aspiring writer and recovering alcoholic who accepts a position as the off-season caretaker of the historic Overlook Hotel.",
+                "image": "https://upload.wikimedia.org/wikipedia/en/4/4c/Shiningnovel.jpg"
+            }
         ]
     }
 
