@@ -32,4 +32,5 @@ ENV FLASK_APP=app.py
 ENV FLASK_ENV=development
 
 # Run the application
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+# Run the application using the entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
