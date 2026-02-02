@@ -131,7 +131,7 @@ export default {
   methods: {
     async fetchBooks() {
       try {
-        const response = await fetch(`/my-books`, {
+        const response = await fetch(`${API_BASE_URL}/my-books`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -158,7 +158,7 @@ export default {
     },
     async returnBook(book_id) {
       try {
-        const response = await fetch(`/return-book`, {
+        const response = await fetch(`${API_BASE_URL}/return-book`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -33,7 +33,7 @@ import API_BASE_URL from "../config";
     },
     methods:{
         async fetch_barchart_data(){
-            const response = await fetch('/get_barchart_data',
+            const response = await fetch(`${API_BASE_URL}/get_barchart_data`,
             {
                 method: 'GET',
                 headers: {

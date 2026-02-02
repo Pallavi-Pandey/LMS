@@ -134,17 +134,17 @@ export default {
     },
     async downloadResource() {
       this.isWaiting = true
-      const res = await fetch('/download-csv')
+      const res = await fetch(`${API_BASE_URL}/download-csv`)
       const data = await res.json()
       console.log("inside download resource", data)
       if (res.ok) {
         const taskId = data['task-id']
         const intv = setInterval(async () => {
-          const csv_res = await fetch(`/get-csv/${taskId}`)
+          const csv_res = await fetch(`${API_BASE_URL}/get-csv/${taskId}`)
           if (csv_res.ok) {
             this.isWaiting = false
             clearInterval(intv)
-            window.location.href = `/get-csv/${taskId}`
+            window.location.href = `${API_BASE_URL}/get-csv/${taskId}`
           }
         }, 1000)
       }
@@ -156,7 +156,7 @@ export default {
         name: this.sectionName
       };
       try {
-        const response = await fetch(`/section/${this.sectionId}`, {
+        const response = await fetch(`${API_BASE_URL}/section/${this.sectionId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ export default {
         name: this.sectionName
       };
       try {
-        const response = await fetch('/add-section', {
+        const response = await fetch(`${API_BASE_URL}/add-section`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ export default {
     async deleteSection() {
       try {
         //get_full_book
-        const response = await fetch(`/delete-section/${this.sectionToDelete}`, {
+        const response = await fetch(`${API_BASE_URL}/delete-section/${this.sectionToDelete}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ export default {
     },
     async getSections() {
       try {
-        const response = await fetch('/sections', {
+        const response = await fetch(`${API_BASE_URL}/sections`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

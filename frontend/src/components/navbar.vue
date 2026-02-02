@@ -84,7 +84,7 @@ export default {
       setTimeout(() => window.location.reload(), 100);
     },
     fetch_requests() {
-      fetch('/requests',{
+      fetch(`${API_BASE_URL}/requests`,{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

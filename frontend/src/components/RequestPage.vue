@@ -46,7 +46,7 @@ export default {
     methods: {
         async getRequests() {
             try {
-                const response = await fetch('/requests', {
+                const response = await fetch(`${API_BASE_URL}/requests`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default {
         },
         async revokeAccess(requestId) {
             try {
-                const response = await fetch(`/revoke-access/${requestId}`, {
+                const response = await fetch(`${API_BASE_URL}/revoke-access/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export default {
         },
         async approveRequest(requestId) {
             try {
-                const response = await fetch(`/approve-request/${requestId}`, {
+                const response = await fetch(`${API_BASE_URL}/approve-request/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export default {
         },
         async rejectRequest(requestId) {
             try {
-                const response = await fetch(`/reject-request/${requestId}`, {
+                const response = await fetch(`${API_BASE_URL}/reject-request/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

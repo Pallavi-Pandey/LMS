@@ -135,7 +135,7 @@ export default {
   methods: {
     add_feedback(rating,feedback,bookId){
       console.log(rating,feedback,bookId)
-      fetch('/add-feedback', {
+      fetch(`${API_BASE_URL}/add-feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +204,7 @@ export default {
     async get_full_book(bookId,book_name) {
       // fetch book content
       try {
-        const response = await fetch(`/full-book/${bookId}`, {
+        const response = await fetch(`${API_BASE_URL}/full-book/${bookId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
@@ -227,7 +227,7 @@ export default {
     },
     async return_book(book_id) {
       try {
-        const response = await fetch('/return-book', {
+        const response = await fetch(`${API_BASE_URL}/return-book`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export default {
 
     async fetchSections() {
       try {
-        const response = await fetch(`/sections`, {
+        const response = await fetch(`${API_BASE_URL}/sections`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -272,7 +272,7 @@ export default {
 
     async get_books_rented() {
       try {
-        const response = await fetch('/books-rented', {
+        const response = await fetch(`${API_BASE_URL}/books-rented`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -295,7 +295,7 @@ export default {
 
     async rent_book(book_id) {
       // ask confirmation before 
-
+      
       // get_books_rented call this 
       await this.get_books_rented();
       if (this.books_rented >= 5) {
@@ -314,7 +314,7 @@ export default {
       try {
 
 
-        const response = await fetch('/rent-book', {
+        const response = await fetch(`${API_BASE_URL}/rent-book`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -343,7 +343,7 @@ export default {
     },
     async revoke_book(book_id) {
       try {
-        const response = await fetch('/revoke-book', {
+        const response = await fetch(`${API_BASE_URL}/revoke-book`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

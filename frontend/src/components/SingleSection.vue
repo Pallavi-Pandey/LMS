@@ -224,7 +224,7 @@ export default {
             this.full_book_view_book_name=book_name;
             this.full_book_view_book_id=bookId;
             try {
-                const response = await fetch(`/full-book/${bookId}`, {
+                const response = await fetch(`${API_BASE_URL}/full-book/${bookId}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
@@ -271,7 +271,7 @@ export default {
             };
             console.log(bookData);
             try {
-                const response = await fetch('/book/' + this.bookId, {
+                const response = await fetch(`${API_BASE_URL}/book/` + this.bookId, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -305,7 +305,7 @@ export default {
 
         async deletebook() {
             try {
-                const response = await fetch(`/book/${this.bookToDelete}`, {
+                const response = await fetch(`${API_BASE_URL}/book/${this.bookToDelete}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ export default {
         async fetchSection() {
             try {
                 // Fetch section and books data from the backend API
-                const response = await fetch(`/section/${this.sectionId}`);
+                const response = await fetch(`${API_BASE_URL}/section/${this.sectionId}`);
                 if (!response.ok) {
                     throw new Error("Unable to fetch section");
                 }
@@ -358,7 +358,7 @@ export default {
 
             };
             try {
-                const response = await fetch('/add-book', {
+                const response = await fetch(`${API_BASE_URL}/add-book`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
