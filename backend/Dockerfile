@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11-slim
+FROM python:3.11
 
 # Set the working directory in the container
 WORKDIR /app
@@ -7,14 +7,8 @@ WORKDIR /app
 # Install system dependencies
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    python3-dev \
-    libffi-dev \
-    libcairo2 \
     libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    shared-mime-info \
+    libpangoft2-1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container
