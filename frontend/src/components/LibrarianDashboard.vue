@@ -115,6 +115,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 export default {
   data() {
     return {
@@ -133,17 +134,17 @@ export default {
     },
     async downloadResource() {
       this.isWaiting = true
-      const res = await fetch('http://127.0.0.1:5000/download-csv')
+      const res = await fetch('/download-csv')
       const data = await res.json()
       console.log("inside download resource", data)
       if (res.ok) {
         const taskId = data['task-id']
         const intv = setInterval(async () => {
-          const csv_res = await fetch(`http://127.0.0.1:5000/get-csv/${taskId}`)
+          const csv_res = await fetch(`/get-csv/${taskId}`)
           if (csv_res.ok) {
             this.isWaiting = false
             clearInterval(intv)
-            window.location.href = `http://127.0.0.1:5000/get-csv/${taskId}`
+            window.location.href = `/get-csv/${taskId}`
           }
         }, 1000)
       }
@@ -155,7 +156,7 @@ export default {
         name: this.sectionName
       };
       try {
-        const response = await fetch(`http://127.0.0.1:5000/section/${this.sectionId}`, {
+        const response = await fetch(`/section/${this.sectionId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ export default {
         name: this.sectionName
       };
       try {
-        const response = await fetch('http://127.0.0.1:5000/add-section', {
+        const response = await fetch('/add-section', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -220,7 +221,7 @@ export default {
     async deleteSection() {
       try {
         //get_full_book
-        const response = await fetch(`http://127.0.0.1:5000/delete-section/${this.sectionToDelete}`, {
+        const response = await fetch(`/delete-section/${this.sectionToDelete}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -239,7 +240,7 @@ export default {
     },
     async getSections() {
       try {
-        const response = await fetch('http://127.0.0.1:5000/sections', {
+        const response = await fetch('/sections', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

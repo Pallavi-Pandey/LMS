@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 export default {
   data() {
     return {
@@ -49,7 +50,7 @@ export default {
         password: this.password
       };
 
-   const res =  await fetch("http://127.0.0.1:5000/register", {
+   const res =  await fetch("/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

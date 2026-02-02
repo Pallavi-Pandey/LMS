@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 export default {
     data() {
         return {
@@ -45,7 +46,7 @@ export default {
     methods: {
         async getRequests() {
             try {
-                const response = await fetch('http://127.0.0.1:5000/requests', {
+                const response = await fetch('/requests', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ export default {
         },
         async revokeAccess(requestId) {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/revoke-access/${requestId}`, {
+                const response = await fetch(`/revoke-access/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export default {
         },
         async approveRequest(requestId) {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/approve-request/${requestId}`, {
+                const response = await fetch(`/approve-request/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ export default {
         },
         async rejectRequest(requestId) {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/reject-request/${requestId}`, {
+                const response = await fetch(`/reject-request/${requestId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

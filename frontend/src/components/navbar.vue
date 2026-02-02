@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 import router from '@/router';
 
 export default {
@@ -54,7 +55,7 @@ export default {
       this.$router.push({ path: '/login' });
     },
     fetch_requests() {
-      fetch('http://127.0.0.1:5000/requests',{
+      fetch('/requests',{
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

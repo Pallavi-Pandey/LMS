@@ -175,6 +175,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 // to get section if from url
 import jsPDF from 'jspdf';
 
@@ -223,7 +224,7 @@ export default {
             this.full_book_view_book_name=book_name;
             this.full_book_view_book_id=bookId;
             try {
-                const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`, {
+                const response = await fetch(`/full-book/${bookId}`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
@@ -270,7 +271,7 @@ export default {
             };
             console.log(bookData);
             try {
-                const response = await fetch('http://127.0.0.1:5000/book/' + this.bookId, {
+                const response = await fetch('/book/' + this.bookId, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -304,7 +305,7 @@ export default {
 
         async deletebook() {
             try {
-                const response = await fetch(`http://127.0.0.1:5000/book/${this.bookToDelete}`, {
+                const response = await fetch(`/book/${this.bookToDelete}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -330,7 +331,7 @@ export default {
         async fetchSection() {
             try {
                 // Fetch section and books data from the backend API
-                const response = await fetch(`http://127.0.0.1:5000/section/${this.sectionId}`);
+                const response = await fetch(`/section/${this.sectionId}`);
                 if (!response.ok) {
                     throw new Error("Unable to fetch section");
                 }
@@ -357,7 +358,7 @@ export default {
 
             };
             try {
-                const response = await fetch('http://127.0.0.1:5000/add-book', {
+                const response = await fetch('/add-book', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

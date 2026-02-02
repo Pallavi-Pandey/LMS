@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import API_BASE_URL from "../config";
 export default {
   name: "MyBooks",
   data() {
@@ -130,7 +131,7 @@ export default {
   methods: {
     async fetchBooks() {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/my-books`, {
+        const response = await fetch(`/my-books`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -157,7 +158,7 @@ export default {
     },
     async returnBook(book_id) {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/return-book`, {
+        const response = await fetch(`/return-book`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

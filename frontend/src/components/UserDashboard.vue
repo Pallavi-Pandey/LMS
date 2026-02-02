@@ -96,6 +96,7 @@
   </div>
 </template>
 <script>
+import API_BASE_URL from "../config";
 import jsPDF from 'jspdf';
 
 export default {
@@ -134,7 +135,7 @@ export default {
   methods: {
     add_feedback(rating,feedback,bookId){
       console.log(rating,feedback,bookId)
-      fetch('http://127.0.0.1:5000/add-feedback', {
+      fetch('/add-feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +204,7 @@ export default {
     async get_full_book(bookId,book_name) {
       // fetch book content
       try {
-        const response = await fetch(`http://127.0.0.1:5000/full-book/${bookId}`, {
+        const response = await fetch(`/full-book/${bookId}`, {
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
@@ -226,7 +227,7 @@ export default {
     },
     async return_book(book_id) {
       try {
-        const response = await fetch('http://127.0.0.1:5000/return-book', {
+        const response = await fetch('/return-book', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -249,7 +250,7 @@ export default {
 
     async fetchSections() {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/sections`, {
+        const response = await fetch(`/sections`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -271,7 +272,7 @@ export default {
 
     async get_books_rented() {
       try {
-        const response = await fetch('http://127.0.0.1:5000/books-rented', {
+        const response = await fetch('/books-rented', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -313,7 +314,7 @@ export default {
       try {
 
 
-        const response = await fetch('http://127.0.0.1:5000/rent-book', {
+        const response = await fetch('/rent-book', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -342,7 +343,7 @@ export default {
     },
     async revoke_book(book_id) {
       try {
-        const response = await fetch('http://127.0.0.1:5000/revoke-book', {
+        const response = await fetch('/revoke-book', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

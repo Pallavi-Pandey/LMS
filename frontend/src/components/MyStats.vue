@@ -11,6 +11,7 @@
   </template>
   
   <script>
+import API_BASE_URL from "../config";
   import { Bar } from 'vue-chartjs'
   import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
   
@@ -32,7 +33,7 @@
     },
     methods:{
         async fetch_barchart_data(){
-            const response = await fetch('http://127.0.0.1:5000/get_barchart_data',
+            const response = await fetch('/get_barchart_data',
             {
                 method: 'GET',
                 headers: {
