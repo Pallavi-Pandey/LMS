@@ -1,134 +1,269 @@
 <template>
-  <div class="page-container">
-    <div class="container">
-      <h1>My Books</h1>
-      <hr>
-      <div class="row">
-        <div class="col-md-12">
-          <div>
-            <h2>My Current Books</h2>
-            <div class="search-bar">
-              <input type="search" v-model="searchCurrent" placeholder="Search Current Books" class="form-control">
+  <div class="dashboard-container">
+    <div class="row mb-5">
+      <div class="col-md-12 text-center">
+        <h1 class="display-5 fw-bold text-white mb-2">My Bookshelf</h1>
+        <p class="text-white-50">Track your current reads and history</p>
+        
+        <div class="search-wrapper mx-auto mt-4">
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Search your books..." 
+            class="form-control form-control-lg search-input glass-input"
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-panel p-4">
+      <ul class="nav nav-pills mb-4 nav-justified glass-tabs" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active rounded-pill fw-bold" id="current-tab" data-bs-toggle="pill" data-bs-target="#current" type="button" role="tab">
+            <i class="bi bi-book-half me-2"></i>Current Reads
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link rounded-pill fw-bold" id="completed-tab" data-bs-toggle="pill" data-bs-target="#completed" type="button" role="tab">
+            <i class="bi bi-check-circle me-2"></i>Completed
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content" id="pills-tabContent">
+        <!-- Current/Active Books -->
+        <div class="tab-pane fade show active" id="current" role="tabpanel">
+           <div v-if="filterBooksBySearch(activeBooks, searchQuery).length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div v-for="book in filterBooksBySearch(activeBooks, searchQuery)" :key="book.id" class="col">
+                <div class="card h-100 border-0 shadow-sm glass-card book-card">
+                  <div class="row g-0 h-100">
+                    <div class="col-4 overflow-hidden rounded-start">
+                       <img :src="book.image || 'https://via.placeholder.com/150x200?text=No+Cover'" class="w-100 h-100 object-fit-cover" 
+                       alt="Book Cover" @error="$event.target.src='https://via.placeholder.com/150x200?text=No+Cover'">
+                    </div>
+                    <div class="col-8">
+                       <div class="card-body d-flex flex-column h-100 py-3">
+                          <h6 class="card-subtitle text-primary mb-1 small fw-bold">{{ book.section_name }}</h6>
+                          <h5 class="card-title fw-bold text-truncate" :title="book.book_title">{{ book.book_title }}</h5>
+                          <p class="card-text small text-muted mb-2">{{ book.author_name }}</p>
+                          
+                          <div class="mt-auto">
+                              <span class="badge bg-secondary mb-2" v-if="book.status === 'requested'">Requested</span>
+                              <div v-if="book.status === 'approved'">
+                                  <small class="d-block text-muted mb-2">Due: {{ make_date_readable(add_7_days(book.issue_date)) }}</small>
+                                  <div class="d-grid gap-2">
+                                    <button class="btn btn-primary btn-sm rounded-pill" type="button" data-bs-toggle="modal"
+                                       data-bs-target="#ViewFullBook" @click="get_full_book(book.book_id,book.book_title)">
+                                      Read
+                                    </button>
+                                     <button class="btn btn-outline-primary btn-sm rounded-pill" type="button" data-bs-toggle="modal"
+                                      data-bs-target="#reviewBookModal" @click="set_return_book_id(book.book_id)">
+                                      Return
+                                    </button>
+                                  </div>
+                              </div>
+                              <button v-if="book.status === 'requested'" @click="returnBook(book.book_id)" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
+                                Cancel Request
+                              </button>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                </div>
             </div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Book ID</th>
-                    <th>Book-Title</th>
-                    <th>Author</th>
-                    <th>Section</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="book in filteredCurrentBooks" :key="book.book_id">
-                    <td>{{ book.book_id }}</td>
-                    <td>{{ book.book_title }}</td>
-                    <td>{{ book.author_name }}</td>
-                    <td>{{ book.section_name }}</td>
-                    <td>{{ book.status }}</td>
-                    <td>
-                      <button v-if="book.status === 'approved'" type="button" class="btn btn-danger"
-                        @click="returnBook(book.book_id)">Return</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+           </div>
+           <div v-else class="text-center py-5 text-muted">
+              <i class="bi bi-journal-x fs-1 mb-3 d-block"></i>
+              No active books found.
+           </div>
+        </div>
+
+        <!-- Completed/Returned Books -->
+        <div class="tab-pane fade" id="completed" role="tabpanel">
+           <div v-if="filterBooksBySearch(completedBooks, searchQuery).length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+              <div v-for="book in filterBooksBySearch(completedBooks, searchQuery)" :key="book.id" class="col">
+                  <div class="card h-100 border-0 shadow-sm glass-card opacity-75">
+                      <div class="card-body">
+                          <h5 class="card-title text-truncate">{{ book.book_title }}</h5>
+                          <h6 class="card-subtitle mb-2 text-muted">{{ book.author_name }}</h6>
+                          <p class="text-success small mb-0"><i class="bi bi-check-all me-1"></i>Returned on {{ make_date_readable(book.return_date) }}</p>
+                      </div>
+                  </div>
+              </div>
+           </div>
+           <div v-else class="text-center py-5 text-muted">
+              No history found.
+           </div>
+        </div>
+      </div>
+    </div>
+    
+     <!-- Review Modal (Copied/Styled from UserDashboard for consistency if needed or kept simple here, but using glass) -->
+    <div class="modal fade glass-modal" id="reviewBookModal" tabindex="-1" aria-labelledby="reviewBookModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel border-0">
+                <div class="modal-header border-bottom-0">
+                    <h1 class="modal-title fs-5 fw-bold text-primary" id="reviewBookModalLabel">Return & Review</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent>
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating</label>
+                            <select class="form-select custom-input" id="rating" v-model.trim="rating" required>
+                                <option value="" disabled selected>Select a rating</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ (Good)</option>
+                                <option value="3">⭐⭐⭐ (Average)</option>
+                                <option value="2">⭐⭐ (Poor)</option>
+                                <option value="1">⭐ (Terrible)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedback" class="form-label">Feedback</label>
+                            <textarea class="form-control custom-input" id="feedback" v-model.trim="feedback" rows="3" placeholder="How was the book?" required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="button" @click="add_feedback(rating, feedback, return_book_id)" class="btn btn-premium">Submit & Return</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Logic button -->
+                 <button type="button" class="d-none" data-bs-dismiss="modal" id="closebookmodal"></button>
+            </div>
+        </div>
+    </div>
+
+
+     <!-- View Full Book Modal -->
+    <div class="modal fade glass-modal" id="ViewFullBook" tabindex="-1" aria-labelledby="ViewFullBookLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content glass-panel border-0">
+          <div class="modal-header border-bottom-0">
+            <h1 class="modal-title fs-5 fw-bold text-primary" id="ViewFullBookLabel">{{ full_book_modal_name }}</h1>
+            <div class="ms-auto d-flex gap-2">
+              <button class="btn btn-outline-primary btn-sm" @click="download_book_as_pdf(full_book_modal_content,full_book_modal_name)">
+                <i class="bi bi-download"></i> Download PDF
+              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
           </div>
-
-          <div>
-            <h2>Requested Books</h2>
-            <div class="search-bar">
-              <input type="search" v-model="searchRequested" placeholder="Search Requested Books" class="form-control">
-            </div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Book ID</th>
-                    <th>Book-Title</th>
-                    <th>Author</th>
-                    <th>Section</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="book in filteredRequestedBooks" :key="book.book_id">
-                    <td>{{ book.book_id }}</td>
-                    <td>{{ book.book_title }}</td>
-                    <td>{{ book.author_name }}</td>
-                    <td>{{ book.section_name }}</td>
-                    <td>{{ book.status }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div>
-            <h2>My Completed Books</h2>
-            <div class="search-bar">
-              <input type="search" v-model="searchCompleted" placeholder="Search Completed Books" class="form-control">
-            </div>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Book ID</th>
-                    <th>Book-Title</th>
-                    <th>Author</th>
-                    <th>Section</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="book in filteredCompletedBooks" :key="book.book_id">
-                    <td>{{ book.book_id }}</td>
-                    <td>{{ book.book_title }}</td>
-                    <td>{{ book.author_name }}</td>
-                    <td>{{ book.section_name }}</td>
-                    <td>{{ book.status }}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="modal-body text-dark">
+            <div class="p-3 bg-white rounded shadow-sm">
+              {{ full_book_modal_content }}
             </div>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
 import API_BASE_URL from "../config";
+import jsPDF from 'jspdf';
+// Note: Some methods for review/read might be duplicated logic from UserDashboard. 
+// Ideally would be a mixin or store, but keeping local for now.
+
 export default {
-  name: "MyBooks",
   data() {
     return {
       books: [],
-      searchCurrent: '',
-      searchRequested: '',
-      searchCompleted: ''
+      searchQuery: "",
+      rating: "",
+      feedback: "",
+      return_book_id: null,
+      full_book_modal_content: '',
+      full_book_modal_name: ''
     };
   },
   created() {
     this.fetchBooks();
   },
   computed: {
-    filteredCurrentBooks() {
-      return this.filterBooksBySearch(this.books.filter(book => book.status === 'approved'), this.searchCurrent);
-    },
-    filteredRequestedBooks() {
-      return this.filterBooksBySearch(this.books.filter(book => book.status === 'requested'), this.searchRequested);
-    },
-    filteredCompletedBooks() {
-      return this.filterBooksBySearch(this.books.filter(book => book.status === 'returned'), this.searchCompleted);
-    }
+      activeBooks() {
+          return this.books.filter(book => book.status === 'approved' || book.status === 'requested');
+      },
+      completedBooks() {
+          return this.books.filter(book => book.status === 'returned');
+      }
   },
   methods: {
+    add_7_days(date) {
+      if(!date) return new Date();
+      return new Date(date).setDate(new Date(date).getDate() + 7);
+    },
+    make_date_readable(date) {
+       if(!date) return 'N/A';
+      return new Date(date).toLocaleDateString();
+    },
+    set_return_book_id(id) {
+        this.return_book_id = id;
+    },
+    async get_full_book(bookId,book_name) {
+      // fetch book content
+      try {
+        const response = await fetch(`${API_BASE_URL}/full-book/${bookId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Authentication-Token': localStorage.getItem('auth-token')
+          }
+
+        });
+        if (!response.ok) {
+          throw new Error('Unable to fetch book');
+        }
+        const data = await response.json();
+        console.log(data);
+        this.full_book_modal_content = data.content;
+        this.full_book_modal_name=book_name;
+      } catch (error) {
+        console.error('Error fetching book:', error);
+      }
+    },
+    download_book_as_pdf(content,bookname) {
+        console.log(content);
+        var pdf = new jsPDF();
+        var textLines = pdf.splitTextToSize(content, pdf.internal.pageSize.width - 20); 
+        var y = 10;
+        for (var i = 0; i < textLines.length; i++) {
+            if (y + 10 > pdf.internal.pageSize.height) { 
+                pdf.addPage();
+                y = 10;
+            }
+            pdf.text(10, y, textLines[i]);
+            y += 10;
+        }
+        pdf.save(bookname+".pdf");
+    },
+
+    add_feedback(rating, feedback, bookId) {
+         fetch(`${API_BASE_URL}/add-feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Authentication-Token': localStorage.getItem('auth-token')
+        },
+        body: JSON.stringify({ "rating": rating, "feedback": feedback, "book_id": bookId })
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Feedback added successfully', data);
+          alert('Feedback added and book returned successfully');
+        
+          document.getElementById('closebookmodal')?.click() || $('#reviewBookModal').modal('hide');
+          this.rating="";
+          this.feedback="";
+          this.returnBook(bookId);  // Actually return the book after feedback
+        })
+        .catch(error => {
+          console.error('Error adding feedback:', error);
+        });
+    },
+
     async fetchBooks() {
       try {
         const response = await fetch(`${API_BASE_URL}/my-books`, {
@@ -180,60 +315,62 @@ export default {
 </script>
 
 <style scoped>
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 5%;
-  background-color: #cfd8e0;
+.dashboard-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-gradient);
+}
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.search-bar {
-  margin-bottom: 10px;
-
+.search-wrapper {
+  max-width: 600px;
 }
 
-.container {
-  color: #553761;
-  padding: 20px;
+.glass-input {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50px;
+  padding-left: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-h1 {
-  text-align: center;
+.glass-tabs .nav-link {
+    color: #6c757d;
+    background: rgba(255,255,255,0.5);
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
 }
 
-.search-bar {
-  margin-bottom: 10px;
+.glass-tabs .nav-link.active {
+    background: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+.book-card {
+  transition: transform 0.3s ease;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.table th,
-.table td {
-  padding: 8px;
-  text-align: left;
+.glass-modal .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
 
-.table th {
-  background-color: #f8f9fa;
-}
-
-.btn {
-  padding: 6px 12px;
-  margin: 2px;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-  border-color: #bd2130;
+.custom-input {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 0.75rem;
 }
 </style>
