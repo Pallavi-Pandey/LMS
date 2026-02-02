@@ -10,7 +10,7 @@ import os
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///lms.db'
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///lms.db')
     SECRET_KEY = "thisissecter"
     SECURITY_PASSWORD_SALT = "thisissaltt"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
